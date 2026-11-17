@@ -25,10 +25,10 @@ COPY bot/ /app/bot/
 COPY --from=frontend-build /app/web/dist /app/web/dist
 COPY docker/supervisord.conf /etc/supervisor/conf.d/wayscase.conf
 
-EXPOSE 8000
+EXPOSE 3000
 STOPSIGNAL SIGTERM
 
 HEALTHCHECK --interval=30s --timeout=5s --start-period=20s --retries=3 \
-  CMD python -c "from urllib.request import urlopen; urlopen('http://127.0.0.1:8000/api/health', timeout=3).read()" || exit 1
+  CMD python -c "from urllib.request import urlopen; urlopen('http://127.0.0.1:3000/api/health', timeout=3).read()" || exit 1
 
 CMD ["/usr/bin/supervisord", "-n", "-c", "/etc/supervisor/supervisord.conf"]

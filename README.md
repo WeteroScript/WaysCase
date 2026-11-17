@@ -30,13 +30,13 @@ docker build -t wayscase .
 docker run -d \
   --name wayscase \
   --restart unless-stopped \
-  -p 8000:8000 \
+  -p 3000:3000 \
   -e BOT_TOKEN="your-telegram-bot-token" \
   -e WEBAPP_URL="https://wayscase.ru/" \
   wayscase
 ```
 
-Configure Bothost to build from the repository root using this Dockerfile and route the domain to the container port **8000**. The platform should terminate HTTPS and forward HTTP traffic to the container. Do not run `node vite.config.ts`, `npm run dev` or a separate frontend start command in production.
+Configure Bothost to build from the repository root using this Dockerfile and route the domain to the container port **3000**. The application listens on `0.0.0.0:3000`. The platform should terminate HTTPS and forward HTTP traffic to that port. Do not run `node vite.config.ts`, `npm run dev` or a separate frontend start command in production.
 
 ### Environment variables
 
@@ -53,7 +53,7 @@ Set both variables in the hosting panel's environment settings. Do not commit re
 - `GET /api/gifts` — current gifts returned by Telegram
 - `GET /api/sticker/{file_id}` — Telegram sticker image
 
-The app itself is served at `/`. The Docker image exposes port `8000`.
+The app itself is served at `/`. The Docker image exposes port `3000`.
 
 ### Logs
 

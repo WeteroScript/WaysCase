@@ -13,7 +13,7 @@ from fastapi.responses import FileResponse, Response
 BOT_TOKEN = os.getenv("BOT_TOKEN", "").strip()
 API_ROOT = f"https://api.telegram.org/bot{BOT_TOKEN}"
 FILE_ROOT = f"https://api.telegram.org/file/bot{BOT_TOKEN}"
-WEB_DIST = Path(os.getenv("WEB_DIST_DIR", "/app/web/dist")).resolve()
+WEB_DIST = Path(os.getenv("WEB_DIST_DIR", "/opt/wayscase/web/dist")).resolve()
 
 logger = logging.getLogger("wayscase.api")
 

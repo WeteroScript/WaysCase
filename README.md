@@ -16,8 +16,9 @@ This is a non-monetary showcase. There are no Stars/TON deposits, wagers, paid r
 - BOT_TOKEN: Telegram bot token (required for bot process)
 - WEBAPP_URL: public HTTPS Mini App URL
 - PORT: HTTP port (default 3000)
+- LOG_LEVEL: Python logging level (default INFO; use DEBUG for deeper diagnostics)
 
 Do not commit real tokens or .env files.
 
 ## Bothost
-Build from the included Dockerfile, expose port 3000, set BOT_TOKEN and WEBAPP_URL, then deploy. Health endpoint: /health.
+Build from the included Dockerfile, expose port 3000, set BOT_TOKEN and WEBAPP_URL, then deploy. Health endpoint: /health. The bot and Supervisor lifecycle logs are written to the container stdout/stderr. Look for the startup, Telegram authorization, long-polling, incoming-message, and successful /start reply log entries.

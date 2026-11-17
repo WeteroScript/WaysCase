@@ -36,7 +36,7 @@ function Art({symbol,tone,large=false}:{symbol:string;tone:string;large?:boolean
 function App() {
   const [tab,setTab] = useState<Tab>("cases");
   const [collection,setCollection] = useState<Collection|null>(null);
-  const [inventory,setInventory] = useState<Gift[]>(()=>{
+  const [inventory] = useState<Gift[]>(()=>{
     try { const v=localStorage.getItem("wayscase-inventory"); return v?JSON.parse(v) as Gift[]:seed; } catch { return seed; }
   });
   const [points,setPoints] = useState(()=>Number(localStorage.getItem("wayscase-points")||0));

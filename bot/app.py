@@ -15,15 +15,16 @@ load_dotenv()
 logging.basicConfig(level=logging.INFO)
 
 BOT_TOKEN = os.getenv("BOT_TOKEN", "").strip()
-WEBAPP_URL = os.getenv("WEBAPP_URL", "").strip()
+DEFAULT_WEBAPP_URL = "https://bot-1794945234-9845-weterochina.bothost.tech/"
+WEBAPP_URL = os.getenv("WEBAPP_URL", DEFAULT_WEBAPP_URL).strip() or DEFAULT_WEBAPP_URL
 
 
 def validate_config() -> None:
     if not BOT_TOKEN:
-        raise RuntimeError("BOT_TOKEN is missing. Set it in bot/.env.")
+        raise RuntimeError("BOT_TOKEN is missing. Set it in the hosting environment.")
     parsed = urlparse(WEBAPP_URL)
-    if parsed.scheme != "https" and parsed.hostname not in {"localhost", "127.0.0.1"}:
-        raise RuntimeError("WEBAPP_URL must use HTTPS for Telegram Mini Apps.")
+    if parsed.scheme != "https" or not parsed.hostname:
+        raise RuntimeError("WEBAPP_URL must be a valid HTTPS URL for Telegram Mini Apps.")
 
 
 def menu_keyboard() -> InlineKeyboardMarkup:
@@ -36,10 +37,8 @@ async def send_welcome(message: Message) -> None:
     first_name = escape(message.from_user.first_name if message.from_user else "коллекционер")
     await message.answer(
         f"Привет, <b>{first_name}</b>!\n\n"
-        "Добро пожаловать в <b>WaysCase</b> — пространство цифровых коллекций "
-        "и Telegram NFT-подарков.\n\n"
-        "Перейди в Mini App через кнопку ниже, чтобы открыть каталог, "
-        "посмотреть модели и свой инвентарь.",
+        "Добро пожаловать в <b>WaysCase</b> — каталог настоящих Telegram Gifts.\n\n"
+        "Открой каталог через кнопку ниже.",
         reply_markup=menu_keyboard(),
     )
 

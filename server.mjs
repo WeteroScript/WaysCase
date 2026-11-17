@@ -499,7 +499,13 @@ async function handleApi(req, res, url) {
       const previousOpens = Number(user.openCounts[caseId] || 0);
       const gift = giftById.get(chosenCase.gifts[previousOpens % chosenCase.gifts.length]);
       const giftModels = modelLists[gift.id] || [];
-      const model = giftModels.length ? giftModels[previousOpens % giftModels.length] : null;
+      if (!giftModels.length) {
+        return {
+          status: 503,
+          body: { ok: false, error: 'model_unavailable', message: 'Модель подарка временно недоступна. Попробуй позже.' },
+        };
+      }
+      const model = giftModels[previousOpens % giftModels.length];
       const item = {
         id: randomUUID(),
         giftId: gift.id,

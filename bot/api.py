@@ -1,4 +1,6 @@
+import logging
 import os
+import time
 from datetime import datetime, timezone
 from pathlib import Path
 from typing import Any
@@ -13,7 +15,31 @@ API_ROOT = f"https://api.telegram.org/bot{BOT_TOKEN}"
 FILE_ROOT = f"https://api.telegram.org/file/bot{BOT_TOKEN}"
 WEB_DIST = Path(os.getenv("WEB_DIST_DIR", "/app/web/dist")).resolve()
 
+logger = logging.getLogger("wayscase.api")
+
 app = FastAPI(title="WaysCase Telegram Gifts API", version="1.1.0")
+
+
+@app.middleware("http")
+async def request_logging(request, call_next):
+    started = time.perf_counter()
+    logger.info("REQUEST START method=%s path=%s host=%s", request.method, request.url.path, request.headers.get("host", "-"))
+    try:
+        response = await call_next(request)
+    except Exception:
+        elapsed = (time.perf_counter() - started) * 1000
+        logger.exception("REQUEST FAILED method=%s path=%s duration_ms=%.1f", request.method, request.url.path, elapsed)
+        raise
+    elapsed = (time.perf_counter() - started) * 1000
+    logger.info("REQUEST END method=%s path=%s status=%s duration_ms=%.1f", request.method, request.url.path, response.status_code, elapsed)
+    return response
+
+
+@app.on_event("startup")
+async def log_startup():
+    logger.info("API STARTUP web_dist=%s exists=%s index_exists=%s bot_token_configured=%s", WEB_DIST, WEB_DIST.is_dir(), (WEB_DIST / "index.html").is_file(), bool(BOT_TOKEN))
+
+
 app.add_middleware(
     CORSMiddleware,
     allow_origins=["*"],
@@ -24,6 +50,7 @@ app.add_middleware(
 
 @app.get("/api/health")
 async def health() -> dict[str, str]:
+    logger.info("HEALTH CHECK OK")
     return {"status": "ok", "service": "WaysCase"}
 
 
@@ -96,7 +123,9 @@ async def sticker_image(file_id: str) -> Response:
 @app.get("/{path:path}", include_in_schema=False)
 async def frontend(path: str) -> FileResponse:
     index_file = WEB_DIST / "index.html"
+    logger.info("FRONTEND REQUEST path=%r resolved_dist=%s index_exists=%s", path, WEB_DIST, index_file.is_file())
     if not index_file.is_file():
+        logger.error("FRONTEND BUILD MISSING: expected %s", index_file)
         raise HTTPException(status_code=503, detail="Frontend build is missing")
 
     requested = (WEB_DIST / path).resolve() if path else index_file

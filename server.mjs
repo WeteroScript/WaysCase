@@ -2,7 +2,7 @@ import http from 'node:http';
 import { readFile, stat, mkdir, writeFile, rename } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createHmac, timingSafeEqual, randomUUID } from 'node:crypto';
+import { createHmac, timingSafeEqual, randomUUID, randomInt } from 'node:crypto';
 
 const APP_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC_DIR = path.join(APP_DIR, 'public');
@@ -514,16 +514,18 @@ async function handleApi(req, res, url) {
           body: { ok: false, error: 'already_opened_today', nextOpenAt: nextUtcDay() },
         };
       }
-      const previousOpens = Number(user.openCounts[caseId] || 0);
-      const gift = giftById.get(chosenCase.gifts[previousOpens % chosenCase.gifts.length]);
-      const giftModels = modelLists[gift.id] || [];
-      if (!giftModels.length) {
+      const availableGifts = chosenCase.gifts
+        .map(giftId => ({ gift: giftById.get(giftId), models: modelLists[giftId] || [] }));
+      if (availableGifts.some(entry => entry.models.length === 0)) {
         return {
           status: 503,
-          body: { ok: false, error: 'model_unavailable', message: 'Модель подарка временно недоступна. Попробуй позже.' },
+          body: { ok: false, error: 'model_unavailable', message: 'Не все модели коллекции доступны. Попробуй позже.' },
         };
       }
-      const model = giftModels[previousOpens % giftModels.length];
+      // Free cosmetic draw: no points are spent, and all gift types in the collection have equal odds.
+      const selectedEntry = availableGifts[randomInt(availableGifts.length)];
+      const gift = selectedEntry.gift;
+      const model = selectedEntry.models[randomInt(selectedEntry.models.length)];
       const item = {
         id: randomUUID(),
         giftId: gift.id,
@@ -549,6 +551,7 @@ async function handleApi(req, res, url) {
           item,
           balances: user.balances,
           totalOpens: Object.values(user.openCounts).reduce((sum, count) => sum + Number(count || 0), 0),
+          odds: { giftTypePercent: 100 / availableGifts.length, giftTypes: availableGifts.length, modelVariantSelection: 'uniform within selected gift' },
           nextOpenAt: nextUtcDay(),
         },
       };

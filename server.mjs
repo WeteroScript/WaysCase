@@ -291,7 +291,8 @@ async function getGiftModels(gift) {
       });
       if (!response.ok) {
         lastError = new Error('Gift model source returned HTTP ' + response.status + ' for ' + apiGiftKey);
-        continue;
+        if (response.status === 404) continue;
+        break;
       }
       const payload = await response.json();
       const rows = Array.isArray(payload) ? payload : (Array.isArray(payload.models) ? payload.models : []);

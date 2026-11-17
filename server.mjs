@@ -533,7 +533,8 @@ async function handleApi(req, res, url) {
           body: { ok: false, error: 'already_opened_today', nextOpenAt: nextUtcDay() },
         };
       }
-      const previousOpens = Number(user.openCounts[caseId] || 0);\n      const availableGifts = chosenCase.gifts
+      const previousOpens = Number(user.openCounts[caseId] || 0);
+      const availableGifts = chosenCase.gifts
         .map(giftId => ({ gift: giftById.get(giftId), models: modelLists[giftId] || [] }));
       if (availableGifts.some(entry => entry.models.length === 0)) {
         return {

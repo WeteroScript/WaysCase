@@ -77,9 +77,9 @@ async def start(message: Message) -> None:
         ]
     )
     await message.answer(
-        f"Привет, <b>{first_name}</b>! ✨\\n\\n"
+        f"Привет, <b>{first_name}</b>! ✨\n\n"
         "Добро пожаловать в <b>WaysCase</b> — каталог коллекционных "
-        "Telegram-подарков и визуальных моделей.\\n\\n"
+        "Telegram-подарков и визуальных моделей.\n\n"
         "Нажми кнопку ниже, чтобы открыть Mini App.",
         reply_markup=keyboard,
     )

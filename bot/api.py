@@ -41,7 +41,7 @@ async def available_gifts() -> dict[str, Any]:
         file_id = thumb.get("file_id")
         result.append({
             "id": gift.get("id"),
-            "name": sticker.get("emoji") or f"Telegram Gift {gift.get('id', '')[:8]}",
+            "name": "Telegram Gift",
             "stars": gift.get("star_count", 0),
             "premium": bool(gift.get("is_premium")),
             "limited": "total_count" in gift,

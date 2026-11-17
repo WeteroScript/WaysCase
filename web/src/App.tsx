@@ -93,7 +93,7 @@ function App() {
             visibleGifts.length ? <div className="gift-grid">{visibleGifts.map((gift) => (
               <button className="gift-card" key={gift.id} onClick={() => setSelected(gift)}>
                 <div className="gift-image">{gift.imageUrl ? <img src={gift.imageUrl} alt={gift.name} loading="lazy" /> : <span>{gift.emoji || "✦"}</span>}<i>TELEGRAM GIFT</i></div>
-                <div className="gift-details"><h3>{gift.name}</h3><div className="gift-tags">{gift.limited && <span className="tag limited">LIMITED</span>}{gift.premium && <span className="tag premium">PREMIUM</span>}</div><p>{gift.stars.toLocaleString("ru-RU")} <span>★ Stars</span></p></div>
+                <div className="gift-details"><h3>{gift.name}</h3><small className="gift-id">ID {gift.id}</small><div className="gift-tags">{gift.limited && <span className="tag limited">LIMITED</span>}{gift.premium && <span className="tag premium">PREMIUM</span>}</div><p>{gift.stars.toLocaleString("ru-RU")} <span>★ Stars</span></p></div>
                 <span className="card-arrow">↗</span>
               </button>
             ))}</div> : <div className="state-panel"><h3>Ничего не найдено</h3><p>Измени поисковый запрос или фильтр.</p></div>
@@ -107,7 +107,7 @@ function App() {
         <button className="modal-close" onClick={() => setSelected(null)}>×</button>
         <div className="modal-image">{selected.imageUrl ? <img src={selected.imageUrl} alt={selected.name} /> : <span>{selected.emoji || "✦"}</span>}</div>
         <p className="eyebrow">OFFICIAL TELEGRAM GIFT</p><h2>{selected.name}</h2>
-        <div className="detail-rows"><div><span>Отправка</span><b>{selected.stars.toLocaleString("ru-RU")} ★ Stars</b></div>
+        <div className="detail-rows"><div><span>Идентификатор</span><b className="gift-id-value">{selected.id}</b></div><div><span>Отправка</span><b>{selected.stars.toLocaleString("ru-RU")} ★ Stars</b></div>
           {selected.limited && <div><span>Остаток</span><b>{selected.remaining ?? "—"} / {selected.total ?? "—"}</b></div>}
           {selected.upgradeStars && <div><span>Upgrade</span><b>{selected.upgradeStars.toLocaleString("ru-RU")} ★ Stars</b></div>}
           <div><span>Premium only</span><b>{selected.premium ? "Да" : "Нет"}</b></div>

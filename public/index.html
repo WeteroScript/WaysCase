@@ -130,8 +130,19 @@ button{font:inherit}
 .rocket-stars{position:absolute;inset:15px;color:#8be9a6;font-size:14px;letter-spacing:6px;opacity:.7}
 .rocket-ship{position:absolute;left:7%;top:68%;z-index:2;font-size:40px;filter:drop-shadow(0 8px 12px #0009);transform:rotate(-25deg)}
 .rocket-horizon{position:absolute;left:-10%;right:-10%;bottom:-90px;height:130px;border-radius:50%;background:radial-gradient(ellipse at center,#24633a,#0b1b10 70%)}
-.rocket-stage.running .rocket-ship{animation:rocket-flight 8s ease-in-out forwards}
+.rocket-stage.running .rocket-ship{animation:rocket-flight var(--rocket-duration, 8s) linear forwards}
 .rocket-stage.complete .rocket-ship{left:84%;top:21%;transform:rotate(-20deg)}
+.rocket-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:10px}
+.rocket-readout{flex-direction:column;align-items:flex-start;justify-content:center;gap:5px;margin-bottom:0;min-width:0}
+.rocket-readout span{font-size:10px}
+.rocket-readout strong{font-size:16px}
+.rocket-explosion{display:none;position:absolute;left:50%;top:38%;z-index:4;place-items:center;width:76px;height:76px;margin:-38px 0 0 -38px;border-radius:50%;background:radial-gradient(circle,#fff6ad 0,#ff9f36 28%,#ed4b28 55%,transparent 72%);color:#fff4d5;font-size:66px;line-height:1;text-shadow:0 0 18px #ff6b32;filter:drop-shadow(0 0 18px #ff6b32)}
+.rocket-stage.crashed .rocket-ship{animation:rocket-disintegrate .55s ease-out forwards}
+.rocket-stage.crashed .rocket-explosion{display:grid;animation:rocket-blast .65s ease-out forwards}
+@keyframes rocket-disintegrate{to{transform:translate(10px,-12px) scale(1.35) rotate(110deg);opacity:0;filter:blur(5px)}}
+@keyframes rocket-blast{0%{opacity:0;transform:scale(.2)}35%{opacity:1;transform:scale(1.12)}100%{opacity:.75;transform:scale(.9)}}
+@media(max-width:520px){.rocket-stats{grid-template-columns:1fr}.rocket-readout{flex-direction:row;align-items:center;justify-content:space-between}}
+
 @keyframes rocket-flight{0%{left:7%;top:68%;transform:rotate(-25deg)}35%{left:34%;top:45%;transform:rotate(-18deg)}70%{left:61%;top:28%;transform:rotate(-15deg)}100%{left:84%;top:21%;transform:rotate(-20deg)}}
 .rocket-readout{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;margin-bottom:10px;border:1px solid #28563a;border-radius:11px;background:#0b170f;color:#93b39b;font-size:11px}
 .rocket-readout strong{color:#6aefa0;font-size:17px;font-variant-numeric:tabular-nums}
@@ -242,15 +253,20 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
 </section>
 
 <section class="page" id="page-rocket" hidden>
-  <div class="section-head"><div><h2>Rocket Run</h2><p>Аркадный полёт без ставок, списаний и денежных призов</p></div></div>
+  <div class="section-head"><div><h2>Rocket Run</h2><p>Аркадный полёт: случайный сбой или ручное завершение</p></div></div>
   <div class="panel">
-    <div class="rocket-stage" id="rocketStage">
+    <div class="rocket-stage" id="rocketStage" aria-label="Полёт ракеты">
       <div class="rocket-stars">✦　·　✧　　　·　✦　　·　✧</div>
       <div class="rocket-ship" id="rocketShip">🚀</div>
+      <div class="rocket-explosion" id="rocketExplosion" aria-hidden="true">✹</div>
       <div class="rocket-horizon"></div>
     </div>
-    <div class="rocket-readout"><span>Время полёта</span><strong id="rocketTime">0.0 сек</strong></div>
-    <p class="status" id="rocketStatus">Запусти ракету и посмотри её полёт. Результат носит только визуальный характер и не влияет на баланс.</p>
+    <div class="rocket-stats">
+      <div class="rocket-readout"><span>Время полёта</span><strong id="rocketTime">0.0 сек</strong></div>
+      <div class="rocket-readout"><span>Высота</span><strong id="rocketAltitude">0 м</strong></div>
+      <div class="rocket-readout"><span>Рекорд сессии</span><strong id="rocketRecord">0.0 сек</strong></div>
+    </div>
+    <p class="status" id="rocketStatus">Запусти ракету. Полёт можно завершить вручную до случайного сбоя. Очки, баланс и инвентарь не затрагиваются.</p>
     <button class="primary full" id="rocketStart">Запустить ракету</button>
   </div>
 </section>
@@ -517,33 +533,69 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
   }
 
   let rocketTimer = null;
-  function launchRocket() {
-    if (rocketTimer) return;
+  let rocketStartedAt = 0;
+  let rocketCrashAt = 0;
+  let rocketRecord = 0;
+
+  function finishRocketRound(crashed) {
+    if (!rocketTimer) return;
+    clearInterval(rocketTimer);
+    rocketTimer = null;
+
+    const elapsed = Math.min(rocketCrashAt, Math.max(0, (Date.now() - rocketStartedAt) / 1000));
+    $('rocketTime').textContent = elapsed.toFixed(1) + ' сек';
+    $('rocketAltitude').textContent = Math.round(elapsed * 250 + elapsed * elapsed * 18).toLocaleString('ru-RU') + ' м';
+
     const stage = $('rocketStage');
     const button = $('rocketStart');
-    const output = $('rocketTime');
     const status = $('rocketStatus');
     stage.classList.remove('running');
-    void stage.offsetWidth;
-    stage.classList.add('running');
-    button.disabled = true;
-    button.textContent = 'Ракета летит…';
-    status.textContent = 'Полёт идёт. Это аркадная анимация без ставок и игровых списаний.';
-    const startedAt = Date.now();
-    rocketTimer = setInterval(() => {
-      const elapsed = (Date.now() - startedAt) / 1000;
-      output.textContent = Math.min(8, elapsed).toFixed(1) + ' сек';
-      if (elapsed >= 8) {
-        clearInterval(rocketTimer);
-        rocketTimer = null;
-        stage.classList.remove('running');
-        stage.classList.add('complete');
-        button.disabled = false;
-        button.textContent = 'Запустить ещё раз';
-        status.textContent = 'Полёт завершён. Баланс и инвентарь не изменились.';
-      }
-    }, 100);
+    stage.classList.add(crashed ? 'crashed' : 'complete');
+
+    if (crashed) {
+      status.textContent = 'Случайный сбой: ракета разрушена. Раунд завершён. Баланс и инвентарь не изменились.';
+      button.textContent = 'Повторить запуск';
+    } else {
+      rocketRecord = Math.max(rocketRecord, elapsed);
+      $('rocketRecord').textContent = rocketRecord.toFixed(1) + ' сек';
+      status.textContent = 'Полёт завершён вручную. Лучший результат этой сессии: ' + rocketRecord.toFixed(1) + ' сек.';
+      button.textContent = 'Запустить ещё раз';
+    }
+    button.disabled = false;
   }
+
+  function launchRocket() {
+    if (rocketTimer) {
+      finishRocketRound(false);
+      return;
+    }
+
+    const stage = $('rocketStage');
+    const button = $('rocketStart');
+    const status = $('rocketStatus');
+    stage.classList.remove('running', 'complete', 'crashed');
+    stage.style.removeProperty('--rocket-duration');
+    void stage.offsetWidth;
+
+    rocketStartedAt = Date.now();
+    rocketCrashAt = 4 + Math.random() * 8;
+    stage.style.setProperty('--rocket-duration', rocketCrashAt.toFixed(2) + 's');
+    stage.classList.add('running');
+
+    $('rocketTime').textContent = '0.0 сек';
+    $('rocketAltitude').textContent = '0 м';
+    button.disabled = false;
+    button.textContent = 'Завершить полёт';
+    status.textContent = 'Ракета набирает высоту. Заверши полёт вручную до случайного сбоя.';
+    
+    rocketTimer = setInterval(() => {
+      const elapsed = (Date.now() - rocketStartedAt) / 1000;
+      $('rocketTime').textContent = elapsed.toFixed(1) + ' сек';
+      $('rocketAltitude').textContent = Math.round(elapsed * 250 + elapsed * elapsed * 18).toLocaleString('ru-RU') + ' м';
+      if (elapsed >= rocketCrashAt) finishRocketRound(true);
+    }, 50);
+  }
+
   $('rocketStart').addEventListener('click', launchRocket);
 
   document.querySelectorAll('[data-tab]').forEach(button => {

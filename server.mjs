@@ -51,16 +51,16 @@ const GIFTS = [
 ];
 
 const CASES = [
-  { id: 'first-light', title: 'First Light', subtitle: 'Первая коллекция', cover: 'eternal-rose', gifts: ['eternal-rose', 'toy-bear', 'precious-peach', 'bunny-muffin'] },
-  { id: 'emerald-room', title: 'Emerald Room', subtitle: 'Изумрудная подборка', cover: 'plush-pepe', gifts: ['plush-pepe', 'bunny-muffin', 'magic-key', 'eternal-rose'] },
-  { id: 'royal-objects', title: 'Royal Objects', subtitle: 'Королевские предметы', cover: 'durovs-cap', gifts: ['durovs-cap', 'diamond-ring', 'golden-star', 'toy-bear'] },
-  { id: 'love-letter', title: 'Love Letter', subtitle: 'Коллекция чувств', cover: 'heart-locket', gifts: ['heart-locket', 'eternal-rose', 'diamond-ring', 'precious-peach'] },
-  { id: 'night-sky', title: 'Night Sky', subtitle: 'Ночная коллекция', cover: 'golden-star', gifts: ['golden-star', 'magic-key', 'durovs-cap', 'plush-pepe'] },
-  { id: 'toy-world', title: 'Toy World', subtitle: 'Мир игрушек', cover: 'toy-bear', gifts: ['toy-bear', 'bunny-muffin', 'plush-pepe', 'precious-peach'] },
-  { id: 'ice-crown', title: 'Ice Crown', subtitle: 'Ледяная корона', cover: 'diamond-ring', gifts: ['diamond-ring', 'golden-star', 'toy-bear', 'heart-locket'] },
-  { id: 'neon-wave', title: 'Neon Wave', subtitle: 'Неоновая волна', cover: 'magic-key', gifts: ['magic-key', 'durovs-cap', 'precious-peach', 'eternal-rose'] },
-  { id: 'peach-club', title: 'Peach Club', subtitle: 'Персиковый клуб', cover: 'precious-peach', gifts: ['precious-peach', 'heart-locket', 'bunny-muffin', 'toy-bear'] },
-  { id: 'grand-archive', title: 'Grand Archive', subtitle: 'Большой архив', cover: 'golden-star', gifts: ['golden-star', 'plush-pepe', 'diamond-ring', 'magic-key'] },
+  { id: 'first-light', title: 'Бомж', subtitle: 'Базовый дроп без лишнего пафоса', cover: 'eternal-rose', gifts: ['eternal-rose', 'toy-bear', 'precious-peach', 'bunny-muffin'] },
+  { id: 'emerald-room', title: 'На чиле', subtitle: 'Спокойный коллекционный дроп', cover: 'plush-pepe', gifts: ['plush-pepe', 'bunny-muffin', 'magic-key', 'eternal-rose'] },
+  { id: 'royal-objects', title: 'Мажор', subtitle: 'Премиальная подборка Telegram Gifts', cover: 'durovs-cap', gifts: ['durovs-cap', 'diamond-ring', 'golden-star', 'toy-bear'] },
+  { id: 'love-letter', title: 'Симп', subtitle: 'Коллекция для романтичного вайба', cover: 'heart-locket', gifts: ['heart-locket', 'eternal-rose', 'diamond-ring', 'precious-peach'] },
+  { id: 'night-sky', title: 'Ночной флекс', subtitle: 'Неоновые и редкие модели', cover: 'golden-star', gifts: ['golden-star', 'magic-key', 'durovs-cap', 'plush-pepe'] },
+  { id: 'toy-world', title: 'Имба', subtitle: 'Яркие модели и необычные подарки', cover: 'toy-bear', gifts: ['toy-bear', 'bunny-muffin', 'plush-pepe', 'precious-peach'] },
+  { id: 'ice-crown', title: 'Лакшери', subtitle: 'Холодный премиум-вайб', cover: 'diamond-ring', gifts: ['diamond-ring', 'golden-star', 'toy-bear', 'heart-locket'] },
+  { id: 'neon-wave', title: 'Гигачад', subtitle: 'Неоновая подборка для флекса', cover: 'magic-key', gifts: ['magic-key', 'durovs-cap', 'precious-peach', 'eternal-rose'] },
+  { id: 'peach-club', title: 'На стиле', subtitle: 'Стильные коллекционные модели', cover: 'precious-peach', gifts: ['precious-peach', 'heart-locket', 'bunny-muffin', 'toy-bear'] },
+  { id: 'grand-archive', title: 'Топ-1', subtitle: 'Подборка заметных моделей', cover: 'golden-star', gifts: ['golden-star', 'plush-pepe', 'diamond-ring', 'magic-key'] },
 ];
 
 const giftById = new Map(GIFTS.map(gift => [gift.id, gift]));
@@ -479,7 +479,7 @@ async function handleApi(req, res, url) {
     });
     if (!upstream.ok) return json(res, 502, { ok: false, error: 'model_source_unavailable' });
     const svg = await upstream.text();
-    if (!/<svg[\\s>]/i.test(svg) || svg.length > 1500000) return json(res, 502, { ok: false, error: 'invalid_model_asset' });
+    if (!/<svg(?:\s|>)/i.test(svg) || svg.length > 1500000) return json(res, 502, { ok: false, error: 'invalid_model_asset' });
     modelImageCache.set(cacheKey, { svg, expiresAt: Date.now() + 60 * 60 * 1000 });
     res.writeHead(200, { 'content-type': 'image/svg+xml; charset=utf-8', 'cache-control': 'public, max-age=3600', 'x-content-type-options': 'nosniff' });
     return res.end(svg);

@@ -66,6 +66,7 @@ const CASES = [
 const giftById = new Map(GIFTS.map(gift => [gift.id, gift]));
 const modelCache = new Map();
 const modelImageCache = new Map();
+const giftApiKeys = new Map();
 const telegramStatus = {
   state: BOT_TOKEN ? 'starting' : 'missing_token',
   enabled: Boolean(BOT_TOKEN),
@@ -278,35 +279,51 @@ async function getGiftModels(gift) {
   const cached = modelCache.get(gift.id);
   if (cached && cached.expiresAt > Date.now()) return cached.models;
 
-  try {
-    const response = await fetch(GIFT_API + '/models/' + encodeURIComponent(gift.id) + '?sorted', {
-      headers: { 'accept': 'application/json', 'user-agent': 'WaysCase/1.0 (Gift Changes attribution)' },
-      signal: AbortSignal.timeout(12000),
-    });
-    if (!response.ok) throw new Error('Gift model source returned HTTP ' + response.status);
-    const payload = await response.json();
-    const rows = Array.isArray(payload) ? payload : (Array.isArray(payload.models) ? payload.models : []);
-    const models = rows
-      .filter(row => row && (row.name || row.telegramName))
-      .map(row => {
-        const modelName = String(row.name || row.telegramName);
-        return {
-          name: modelName,
-          telegramName: String(row.telegramName || modelName),
-          rarity: String(row.rarityTier || row.rarity || 'Collectible'),
-          rarityPermille: Number(row.rarityPermille || 0),
-          crafted: Boolean(row.crafted),
-          documentId: row.documentId ? String(row.documentId) : null,
-          imageUrl: '/api/model.svg?gift=' + encodeURIComponent(gift.id) + '&model=' + encodeURIComponent(modelName),
-        };
+  const compactName = gift.name.normalize('NFKD').replace(/[^a-zA-Z0-9]/g, '');
+  const candidates = Array.from(new Set([gift.id, gift.name, compactName, compactName.toLowerCase()]));
+  let lastError = null;
+
+  for (const apiGiftKey of candidates) {
+    try {
+      const response = await fetch(GIFT_API + '/models/' + encodeURIComponent(apiGiftKey) + '?sorted', {
+        headers: { 'accept': 'application/json', 'user-agent': 'WaysCase/1.0 (Gift Changes attribution)' },
+        signal: AbortSignal.timeout(12000),
       });
-    modelCache.set(gift.id, { models, expiresAt: Date.now() + 60 * 60 * 1000 });
-    return models;
-  } catch (error) {
-    log('warn', 'Telegram gift model catalogue unavailable', 'gift=' + gift.id + ' reason=' + error.message);
-    modelCache.set(gift.id, { models: [], expiresAt: Date.now() + 2 * 60 * 1000 });
-    return [];
+      if (!response.ok) {
+        lastError = new Error('Gift model source returned HTTP ' + response.status + ' for ' + apiGiftKey);
+        continue;
+      }
+      const payload = await response.json();
+      const rows = Array.isArray(payload) ? payload : (Array.isArray(payload.models) ? payload.models : []);
+      const models = rows
+        .filter(row => row && (row.name || row.telegramName))
+        .map(row => {
+          const modelName = String(row.name || row.telegramName);
+          return {
+            name: modelName,
+            telegramName: String(row.telegramName || modelName),
+            rarity: String(row.rarityTier || row.rarity || 'Collectible'),
+            rarityPermille: Number(row.rarityPermille || 0),
+            crafted: Boolean(row.crafted),
+            documentId: row.documentId ? String(row.documentId) : null,
+            imageUrl: '/api/model.svg?gift=' + encodeURIComponent(gift.id) + '&model=' + encodeURIComponent(modelName),
+          };
+        });
+      if (!models.length) {
+        lastError = new Error('No model variants were returned for ' + apiGiftKey);
+        continue;
+      }
+      giftApiKeys.set(gift.id, apiGiftKey);
+      modelCache.set(gift.id, { models, expiresAt: Date.now() + 60 * 60 * 1000 });
+      return models;
+    } catch (error) {
+      lastError = error;
+    }
   }
+
+  log('warn', 'Telegram gift model catalogue unavailable', 'gift=' + gift.id + ' reason=' + (lastError?.message || 'empty result'));
+  modelCache.set(gift.id, { models: [], expiresAt: Date.now() + 2 * 60 * 1000 });
+  return [];
 }
 
 async function buildCatalogue() {
@@ -453,7 +470,7 @@ async function handleApi(req, res, url) {
       res.writeHead(200, { 'content-type': 'image/svg+xml; charset=utf-8', 'cache-control': 'public, max-age=3600', 'x-content-type-options': 'nosniff' });
       return res.end(cachedImage.svg);
     }
-    const upstream = await fetch(GIFT_API + '/model/' + encodeURIComponent(giftId) + '/' + encodeURIComponent(modelName) + '.svg', {
+    const upstream = await fetch(GIFT_API + '/model/' + encodeURIComponent(giftApiKeys.get(giftId) || gift.id) + '/' + encodeURIComponent(modelName) + '.svg', {
       headers: { 'accept': 'image/svg+xml', 'user-agent': 'WaysCase/1.0 (Gift Changes attribution)' },
       signal: AbortSignal.timeout(12000),
     });

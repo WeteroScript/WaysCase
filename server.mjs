@@ -10,7 +10,19 @@ const DATA_DIR = process.env.DATA_DIR || path.join(APP_DIR, 'data');
 const DB_FILE = path.join(DATA_DIR, 'wayscase-state.json');
 const PORT = Number.parseInt(process.env.PORT || '3000', 10);
 const BOT_TOKEN = (process.env.BOT_TOKEN || process.env.TELEGRAM_BOT_TOKEN || '').trim().replace(/^["']|["']$/g, '');
-const WEBAPP_URL = process.env.WEBAPP_URL || 'https://bot-1794953284-8098-weterochina.bothost.tech/';
+const DEFAULT_WEBAPP_URL = 'https://bot-1794953284-8098-weterochina.bothost.tech/';
+function resolveWebAppUrl() {
+  const configured = (process.env.WEBAPP_URL || DEFAULT_WEBAPP_URL).trim().replace(/^["']|["']$/g, '');
+  try {
+    const parsed = new URL(configured);
+    if (parsed.protocol !== 'https:') throw new Error('Mini App URL must use HTTPS');
+    return parsed.toString();
+  } catch (error) {
+    log('warn', 'WEBAPP_URL is invalid; using the built-in HTTPS address', error.message);
+    return DEFAULT_WEBAPP_URL;
+  }
+}
+const WEBAPP_URL = resolveWebAppUrl();
 const GIFT_API = 'https://api.changes.tg';
 
 const MIME = {
@@ -303,6 +315,7 @@ async function buildCatalogue() {
   return {
     modelSource: 'Gift Changes — independent Telegram collectible model catalogue',
     attribution: 'Gift model data and preview rendering provided by Gift Changes.',
+    modelCount: Object.values(byGift).reduce((sum, list) => sum + list.length, 0),
     cases: CASES.map((item, index) => ({
       id: item.id,
       number: index + 1,
@@ -446,7 +459,7 @@ async function handleApi(req, res, url) {
     });
     if (!upstream.ok) return json(res, 502, { ok: false, error: 'model_source_unavailable' });
     const svg = await upstream.text();
-    if (!svg.trim().startsWith('<svg') || svg.length > 1500000) return json(res, 502, { ok: false, error: 'invalid_model_asset' });
+    if (!/<svg[\\s>]/i.test(svg) || svg.length > 1500000) return json(res, 502, { ok: false, error: 'invalid_model_asset' });
     modelImageCache.set(cacheKey, { svg, expiresAt: Date.now() + 60 * 60 * 1000 });
     res.writeHead(200, { 'content-type': 'image/svg+xml; charset=utf-8', 'cache-control': 'public, max-age=3600', 'x-content-type-options': 'nosniff' });
     return res.end(svg);

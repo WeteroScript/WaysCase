@@ -1,24 +1,48 @@
 # WaysCase
 
-Telegram Mini App showcase for collectible Telegram gifts.
+Telegram Mini App for exploring collectible Telegram Gift models.
 
-## Included
-- Telegram /start bot with Mini App button.
-- Responsive gift catalog with ten curated collections.
-- Preview-only rocket animation and model styling.
-- Local demo inventory; no transfers or ownership claims.
-- Node.js server and Telegram Bot API long polling run in the same process on port 3000.
+## Current application
 
-## Safety and demo boundaries
-This is a non-monetary showcase. There are no Stars/TON deposits, wagers, paid random rewards, cash-outs, purchases, withdrawals, or transfers. Collection contents are displayed in advance. The flight is decorative only.
+- Telegram bot /start opens the Mini App.
+- Telegram initData is verified on the server using the bot token before a personal profile, inventory, or balance is returned.
+- Ten curated collections are populated with collectible model variants from the independent Gift Changes catalogue.
+- Each collection has a horizontal scrolling reveal animation.
+- The next item follows a fixed, visible sequence. It is not random.
+- Each collection can be opened for free once per UTC day.
+- Opened items, per-case progress, and internal point balances are stored server-side.
+- Each free opening adds 10 internal Stars points and 1 internal TON point. Points are not spent to open a collection.
+- Inventory is persistent in the /data directory.
+
+## Important distinction
+
+WaysCase's Stars and TON counters are internal, non-transferable progression points. They are not Telegram Stars or Toncoin, cannot be purchased, transferred, withdrawn, or exchanged.
+
+The catalogue displays model previews of real Telegram collectible gift types. A WaysCase inventory entry is a record inside this app; it does not transfer, mint, issue, or prove ownership of an NFT in Telegram or on the TON blockchain.
+
+Gift model data and SVG previews are supplied by the independent Gift Changes project (https://t.me/GiftChangesAPI). Gift Changes is not Telegram. The external model service must be reachable for the model previews to load.
 
 ## Environment
-- BOT_TOKEN: Telegram bot token (required for bot replies)
-- TELEGRAM_BOT_TOKEN: accepted as an alternative environment variable name
-- WEBAPP_URL: public HTTPS Mini App URL (defaults to the Bothost app URL)
-- PORT: HTTP port (default 3000)
 
-Do not commit real tokens or .env files.
+- BOT_TOKEN: Telegram bot token already configured in Bothost.
+- TELEGRAM_BOT_TOKEN: accepted as an alternative variable name.
+- WEBAPP_URL: public HTTPS address of this Mini App.
+- PORT: HTTP port (default 3000).
+- DATA_DIR: persistent application data directory (default /data in Docker).
 
-## Bothost
-Build from the included Dockerfile, expose port 3000, set BOT_TOKEN and WEBAPP_URL, then deploy. Health endpoint: /health. The web server and Telegram bot run in the same Node process, so starting `node server.mjs` also starts the bot. Logs include token presence (never the token itself), Telegram authorization, webhook state, long-polling, incoming messages, and successful `/start` replies. `/health` reports the bot state. If it reports `missing_token`, add `BOT_TOKEN` in Bothost. If it reports `unauthorized`, replace the token. If logs show `polling_conflict` or API error 409, stop other instances using the same token.
+Do not commit tokens or .env files.
+
+## Bothost deployment
+
+Build the included Dockerfile and expose port 3000. The image declares /data as a volume so WaysCase can store its database outside the application filesystem. If Bothost offers persistent volumes, mount one at /data; without persistent storage provided by the host, data may be lost when the container is replaced.
+
+The bot and web application run in the same Node process. The app starts Telegram long polling after the database is ready. Logs include startup state, Telegram authorization, webhook state, polling errors, incoming commands, and successful /start replies.
+
+- GET /health reports application and bot status.
+- GET /api/catalog returns collection and current model metadata.
+- GET /api/me returns the verified Telegram user's balances, inventory, and progress.
+- POST /api/open records one free, fixed-sequence opening for a collection per UTC day.
+
+## Local validation
+
+Run node --check server.mjs and start the app with BOT_TOKEN, WEBAPP_URL, and DATA_DIR configured. Open the Mini App from the Telegram bot so that Telegram supplies signed initData.

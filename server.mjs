@@ -584,7 +584,9 @@ function requestUrlForError(req) {
 server.listen(PORT, '0.0.0.0', () => {
   log('info', 'WaysCase server listening', 'port=' + PORT);
   databaseReady = loadDatabase()
-    .then(() => runTelegramPolling())
+    .then(() => {
+      void runTelegramPolling();
+    })
     .catch(error => {
       log('error', 'Application startup failed', error.stack || error.message);
       telegramStatus.state = 'startup_error';

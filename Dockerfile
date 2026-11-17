@@ -13,7 +13,7 @@ RUN npm run build \
 FROM python:3.11-slim AS runtime
 ENV PYTHONUNBUFFERED=1 \
     PYTHONDONTWRITEBYTECODE=1 \
-    WEB_DIST_DIR=/app/web/dist
+    WEB_DIST_DIR=/opt/wayscase/web/dist
 WORKDIR /app/bot
 
 RUN apt-get update \
@@ -24,9 +24,9 @@ COPY bot/requirements.txt /app/bot/requirements.txt
 RUN pip install --no-cache-dir -r requirements.txt
 
 COPY bot/ /app/bot/
-COPY --from=frontend-build /app/web/dist /app/web/dist
-RUN test -s /app/web/dist/index.html \
-    && echo "FRONTEND_RUNTIME_OK: /app/web/dist/index.html exists"
+COPY --from=frontend-build /app/web/dist /opt/wayscase/web/dist
+RUN test -s /opt/wayscase/web/dist/index.html \
+    && echo "FRONTEND_RUNTIME_OK: /opt/wayscase/web/dist/index.html exists"
 
 COPY docker/supervisord.conf /etc/supervisor/conf.d/wayscase.conf
 

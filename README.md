@@ -12,19 +12,31 @@ WaysCase is a Telegram Mini App for browsing real Telegram Gifts.
 
 **API scope:** `getAvailableGifts` returns gifts that the bot can send. It is not a complete catalogue of unique collectible gifts and does not prove that a Telegram user owns a gift.
 
-## Docker deployment (recommended)
+## Bothost deployment
 
-The repository includes a multi-stage `Dockerfile`. It builds the Vite frontend and runs the frontend, FastAPI API and aiogram bot in one container. FastAPI serves the compiled frontend and handles `/api/*`, so the deployment needs only one public container port.
+Use the standard Bothost hostname (no custom domain):
 
-### Build
+```
+https://bot-1794945234-9845-weterochina.bothost.tech/
+```
 
-From the repository root:
+In the Bothost app settings:
+- Leave the custom domain field empty.
+- Set the web application/container port to `3000`.
+- Set `BOT_TOKEN` to the token from BotFather.
+- Set `WEBAPP_URL` to the standard HTTPS hostname above, including the trailing slash.
+
+The Docker image builds the Vite frontend and runs the frontend, FastAPI API and aiogram bot in one container. FastAPI serves the compiled frontend and handles `/api/*`, so only one public container port is needed.
+
+### Docker build
+
+Run from the repository root:
 
 ```bash
 docker build -t wayscase .
 ```
 
-### Run
+### Docker run
 
 ```bash
 docker run -d \
@@ -32,22 +44,22 @@ docker run -d \
   --restart unless-stopped \
   -p 3000:3000 \
   -e BOT_TOKEN="your-telegram-bot-token" \
-  -e WEBAPP_URL="https://wayscase.ru/" \
+  -e WEBAPP_URL="https://bot-1794945234-9845-weterochina.bothost.tech/" \
   wayscase
 ```
 
-Configure Bothost to build from the repository root using this Dockerfile and route the domain to the container port **3000**. The application listens on `0.0.0.0:3000`. The platform should terminate HTTPS and forward HTTP traffic to that port. Do not run `node vite.config.ts`, `npm run dev` or a separate frontend start command in production.
+The application listens on `0.0.0.0:3000`. Bothost should terminate HTTPS and forward traffic to container port `3000`.
 
-### Environment variables
+## Environment variables
 
 | Variable | Required | Description |
 |---|---|---|
 | `BOT_TOKEN` | Yes | Telegram bot token from BotFather |
-| `WEBAPP_URL` | Yes | Public HTTPS URL of the Mini App, e.g. `https://wayscase.ru/` |
+| `WEBAPP_URL` | No | Public HTTPS Mini App URL; defaults to the standard Bothost hostname above |
 
-Set both variables in the hosting panel's environment settings. Do not commit real tokens or put them in frontend/Vite variables.
+Keep `BOT_TOKEN` only in the server environment. Never add it to frontend source.
 
-### Health check
+## Health check
 
 - `GET /api/health` — container/API health
 - `GET /api/gifts` — current gifts returned by Telegram
@@ -55,7 +67,7 @@ Set both variables in the hosting panel's environment settings. Do not commit re
 
 The app itself is served at `/`. The Docker image exposes port `3000`.
 
-### Logs
+## Logs
 
 ```bash
 docker logs -f wayscase
@@ -84,15 +96,11 @@ export BOT_TOKEN="your-telegram-bot-token"
 uvicorn api:app --host 0.0.0.0 --port 8000
 ```
 
-For Windows PowerShell, use `$env:BOT_TOKEN="your-telegram-bot-token"`.
-
 ### Telegram bot
 
-In a separate terminal, set `BOT_TOKEN` and `WEBAPP_URL=https://wayscase.ru/`, then run:
+Set `BOT_TOKEN` and, if needed, `WEBAPP_URL` before running:
 
 ```bash
 cd bot
 python app.py
 ```
-
-Keep `BOT_TOKEN` only in the server environment. Never add it to frontend source.

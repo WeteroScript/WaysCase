@@ -43,7 +43,7 @@ function App() {
   useEffect(() => { void loadGifts(); }, []);
 
   const visibleGifts = useMemo(() => gifts.filter((gift) => {
-    const matchesQuery = gift.name.toLowerCase().includes(query.trim().toLowerCase());
+    const matchesQuery = (gift.name + " " + gift.id).toLowerCase().includes(query.trim().toLowerCase());
     const matchesFilter = filter === "all" || (filter === "limited" ? gift.limited : gift.premium);
     return matchesQuery && matchesFilter;
   }), [gifts, query, filter]);
@@ -62,7 +62,7 @@ function App() {
         <div className="hero-copy">
           <p className="eyebrow">OFFICIAL TELEGRAM GIFTS</p>
           <h1>Коллекция начинается<br /><span>с настоящего подарка.</span></h1>
-          <p>Каталог подарков Telegram с официальными названиями, изображениями и доступными характеристиками.</p>
+          <p>Каталог подарков Telegram с официальными изображениями, идентификаторами и доступными характеристиками.</p>
           <button className="hero-button" onClick={() => document.getElementById("catalog")?.scrollIntoView({ behavior: "smooth" })}>Открыть каталог <b>↘</b></button>
         </div>
         <div className="hero-art" aria-hidden="true"><div className="gift-orbit orbit-a" /><div className="gift-orbit orbit-b" /><div className="hero-gift">✦</div><span className="spark spark-a">✧</span><span className="spark spark-b">✦</span></div>
@@ -80,7 +80,7 @@ function App() {
             <button className="refresh" onClick={() => void loadGifts()} disabled={loading}>↻ Обновить</button>
           </div>
           <div className="toolbar">
-            <label className="search"><span>⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Найти подарок..." /></label>
+            <label className="search"><span>⌕</span><input value={query} onChange={(event) => setQuery(event.target.value)} placeholder="Найти по ID..." /></label>
             <div className="filters">
               <button className={filter === "all" ? "chosen" : ""} onClick={() => setFilter("all")}>Все</button>
               <button className={filter === "limited" ? "chosen" : ""} onClick={() => setFilter("limited")}>Лимитированные</button>

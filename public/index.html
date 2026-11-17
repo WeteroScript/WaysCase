@@ -125,6 +125,56 @@ button{font:inherit}
 .notice{margin-top:12px;color:#9ba4ba;font-size:10px;line-height:1.55}
 @media(max-width:700px){.app{padding:14px 14px 38px}.hero{padding:32px 0 19px;display:block}.hero-note{display:none}.case-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.case-art{height:145px;padding:12px}.case-body{padding:12px}.case-body h3{font-size:15px}.case-meta{font-size:8px}.case-body p{font-size:10px}.case-preview{gap:3px;margin:11px 0}.mini-model{width:25px;height:25px}.case-body .primary{padding:10px 8px;font-size:10px}.balance{min-width:80px;padding:7px 9px}.balance strong{font-size:13px}.brand{font-size:14px}.two-col{grid-template-columns:1fr 1fr}.nav button{padding:9px 11px;font-size:11px}}
 @media(max-width:380px){.case-grid{grid-template-columns:1fr}.case-art{height:175px}.balances{gap:5px}.balance{min-width:70px}.balance span{font-size:8px}}
+
+/* WaysCase black / green identity */
+:root{color-scheme:dark;background:#050907;color:#e8f5ec}
+body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),radial-gradient(ellipse at 4% 36%,#0b2418 0,transparent 34%),#050907}
+.topbar{border-bottom-color:#1c3826}
+.brand-mark{background:linear-gradient(145deg,#64f59b,#16874a);color:#04190d;box-shadow:0 8px 28px #20d66b35}
+.balance{border-color:#21432d;background:#0c1710}
+.balance span{color:#86a991}
+.hero h1 em{color:#54e88c}
+.eyebrow{color:#65e995}
+.hero p,.section-head p{color:#94aa9a}
+.hero-note{border-color:#245236;background:#0b1b11;color:#a7edbd}
+.nav{background:#09130c;border-color:#1d3a27}
+.nav button{color:#9aaf9f}
+.nav button.active{background:linear-gradient(135deg,#168b49,#31cf73);color:#031309;box-shadow:0 7px 20px #14c65a33}
+.case-card{border-color:#1c3826;background:linear-gradient(150deg,#102017,#090f0b)}
+.case-card:hover{border-color:#3bdc7d}
+.case-art{background:radial-gradient(ellipse at 50% 60%,#174d2d 0,transparent 65%),linear-gradient(135deg,#102719,#08100b)}
+.case-meta{color:#65e995}
+.case-meta .count{color:#86a991}
+.mini-model{border-color:#28563a;background:#13251a}
+.primary{background:linear-gradient(135deg,#138a45,#32d476);color:#03150a;box-shadow:0 7px 18px #14c65a2d}
+.primary:hover{filter:brightness(1.08)}
+.secondary{background:#142119;color:#d9f4e2;border-color:#28563a}
+.panel{border-color:#1e3a29;background:linear-gradient(145deg,#102017,#0a120d)}
+.balance-large{background:#0e2115;border-color:#245136}
+.balance-large span{color:#8fbd9b}
+.avatar{background:linear-gradient(145deg,#66f29b,#128947);color:#04190d}
+.inventory-item{border-color:#23432e;background:#0e1912}
+.inventory-image{background:radial-gradient(ellipse at center,#17482a,#0d1c12)}
+.empty{border-color:#315b3e;color:#91aa98}
+.empty strong{color:#e0f5e6}
+.modal-box{background:#0d1710;border-color:#2a5638}
+.close{background:#1a3021;color:#e8f5ec}
+.gift-row{border-color:#23422d;background:#09130c}
+.gift-thumb{background:radial-gradient(ellipse at center,#1b4d2e,#0d1b12)}
+.rarity{color:#79eaa0}
+.order-note{background:#102016;border-color:#28563a;color:#a7d8b5}
+.roulette-window{border-color:#39744b;background:linear-gradient(90deg,#09130c,#142a1b,#09130c)}
+.roulette-window:before{background:#68f59a;box-shadow:0 0 12px #46e783}
+.roulette-card{border-color:#31543b;background:#142219}
+.roulette-card small{color:#c1e8ca}
+.result{border-color:#398354;background:#102619}
+.result-image{background:#1a3b26}
+.gate{border-color:#28563a;background:#0d1b12}
+.gate p,.status{color:#9ab6a1}
+.footer{color:#718b79}
+.footer a{color:#69e99a}
+.error{color:#ffaaaa}
+
 </style>
 </head>
 <body>
@@ -175,10 +225,10 @@ button{font:inherit}
     <div class="modal-head"><div><h2 id="modalTitle">Collection</h2><p id="modalSubtitle"></p></div><button class="close" id="modalClose" aria-label="Закрыть">×</button></div>
     <p class="status" id="modalPreview"></p>
     <div class="gift-list" id="modalGiftList"></div>
-    <div class="order-note" id="orderNote">Порядок коллекции фиксирован: следующий подарок можно увидеть до открытия. Случайного выбора и ставок нет.</div>
+    <div class="order-note" id="orderNote">Бесплатное случайное открытие. Шанс каждого типа подарка одинаковый; модель выбирается равновероятно среди вариантов выбранного типа.</div>
     <div class="modal-actions"><button class="primary" id="openCaseButton">Открыть бесплатно</button><button class="secondary" id="modalDone">Закрыть</button></div>
     <div class="opening" id="openingStage">
-      <p class="status">Прокрутка к заранее определённому подарку…</p>
+      <p class="status">Анимированная прокрутка к случайно выбранной модели…</p>
       <div class="roulette-window" id="rouletteWindow"><div class="roulette-track" id="rouletteTrack"></div></div>
       <div class="result" id="openingResult"><div class="result-image" id="resultImage"></div><div><strong id="resultName"></strong><small id="resultMeta"></small></div></div>
     </div>
@@ -293,10 +343,12 @@ button{font:inherit}
     const name = state.user.firstName || 'Collector';
     const handle = state.user.username ? '@' + state.user.username : 'Telegram account connected';
     const b = state.user.balances || {stars:0,ton:0};
+    const claimed = Boolean(state.user.starterStarsClaimed);
     root.innerHTML = '<div class="panel"><div class="profile-head"><div class="avatar">' + esc(name.slice(0,1).toUpperCase()) + '</div><div><h2>' + esc(name) + '</h2><p>' + esc(handle) + '</p></div></div>' +
       '<div class="two-col"><div class="balance-large"><span>⭐ INTERNAL STARS</span><strong>' + Number(b.stars).toLocaleString('ru-RU') + '</strong></div><div class="balance-large"><span>TON POINTS</span><strong>' + Number(b.ton).toLocaleString('ru-RU') + '</strong></div></div>' +
+      (claimed ? '<p class="status">Стартовый бонус 10 000 Stars уже получен.</p>' : '<div style="margin-top:16px"><button class="primary full" id="claimStarterStars">Получить 10 000 Stars</button><p class="status">Одноразовый стартовый бонус для внутреннего прогресса WaysCase.</p></div>') +
       '<p>Всего открытий: <strong>' + Number(state.user.totalOpens || 0) + '</strong></p>' +
-      '<p class="fine-print">Это внутренние очки прогресса. Они не являются Telegram Stars или криптовалютой TON, не продаются, не переводятся и не выводятся. Открытия бесплатные и не расходуют баланс.</p></div>';
+      '<p class="fine-print">Stars и TON здесь — внутренние очки WaysCase, а не Telegram Stars или криптовалюта TON. Они не продаются, не переводятся и не выводятся. Открытия бесплатные и не расходуют баланс.</p></div>';
   }
 
   function renderAll() {
@@ -314,15 +366,13 @@ button{font:inherit}
     const c = getCase(caseId);
     if (!c) return;
     state.activeCase = c;
-    const count = getCount(c.id);
-    const nextGift = c.gifts[count % c.gifts.length];
-    const nextModels = nextGift.models || [];
-    const nextModel = nextModels.length ? nextModels[count % nextModels.length] : null;
+    const readyGifts = c.gifts.filter(g => g.models && g.models.length > 0);
+    const giftChance = readyGifts.length ? (100 / readyGifts.length) : 0;
     $('modalTitle').textContent = c.title;
     $('modalSubtitle').textContent = c.subtitle + ' · ' + c.gifts.length + ' gifts';
     $('modalPreview').textContent = alreadyOpened(c.id)
       ? 'Эта коллекция уже открыта сегодня. Следующее бесплатное открытие доступно после смены даты UTC.'
-      : 'Следующий предмет задан порядком коллекции: ' + nextGift.name + (nextModel ? ' · модель ' + nextModel.telegramName : '') + '.';
+      : 'Шанс каждого доступного типа подарка: ' + giftChance.toFixed(1) + '%. После выбора типа все его модели имеют равный шанс.';
     $('modalGiftList').innerHTML = c.gifts.map(g => {
       const m = g.models && g.models.length ? g.models[0] : null;
       const rarity = m ? m.rarity : (g.models && g.models.length === 0 ? 'Модели загружаются' : 'Collectible');
@@ -330,13 +380,13 @@ button{font:inherit}
       return '<div class="gift-row"><div class="gift-thumb">' + imgOrEmoji(g,m) + '</div><div class="gift-text"><strong>' + esc(g.name) + '</strong><small>' + modelCount + ' model variants indexed</small></div><span class="rarity">' + esc(rarity) + '</span></div>';
     }).join('');
     $('openCaseButton').disabled = !canOpen(c.id);
-    $('openCaseButton').textContent = alreadyOpened(c.id) ? 'Уже открыто сегодня' : (nextModels.length ? 'Открыть бесплатно' : 'Модель пока недоступна');
+    $('openCaseButton').textContent = alreadyOpened(c.id) ? 'Уже открыто сегодня' : (readyGifts.length === c.gifts.length ? 'Открыть бесплатно' : 'Каталог загружается');
     $('openCaseButton').hidden = false;
     $('openingStage').classList.remove('show');
     $('openingResult').classList.remove('show');
     $('modalNotice').textContent = alreadyOpened(c.id)
       ? 'Одна бесплатная прокрутка этой коллекции в день. Баланс не расходуется.'
-      : 'Бесплатно · без ставок · фиксированный результат · +10 внутренних Stars и +1 TON point.';
+      : 'Бесплатно · внутренний баланс не расходуется. За открытие начисляется +10 Stars и +1 TON point.';
     $('caseModal').classList.add('show');
   }
 
@@ -416,6 +466,29 @@ button{font:inherit}
       document.querySelectorAll('[data-tab]').forEach(b => b.classList.toggle('active',b === button));
       document.querySelectorAll('.page').forEach(p => p.hidden = p.id !== 'page-' + button.dataset.tab);
     });
+  });
+  $('profileRoot').addEventListener('click', async event => {
+    const button = event.target.closest('#claimStarterStars');
+    if (!button || button.disabled) return;
+    button.disabled = true;
+    button.textContent = 'Начисляем…';
+    try {
+      await api('/api/claim-starter-stars',{method:'POST',body:'{}'});
+      const me = await api('/api/me');
+      state.user = me.user;
+      renderAll();
+    } catch (error) {
+      if (error.code === 'starter_stars_already_claimed') {
+        const me = await api('/api/me').catch(() => null);
+        if (me) state.user = me.user;
+        renderAll();
+      } else {
+        button.disabled = false;
+        button.textContent = 'Повторить получение';
+        const note = button.parentElement.querySelector('.status');
+        if (note) note.textContent = error.message || 'Не удалось получить бонус.';
+      }
+    }
   });
   $('caseGrid').addEventListener('click',event => {
     const button = event.target.closest('[data-case]');

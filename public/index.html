@@ -404,7 +404,8 @@ button{font:inherit}
       } else {
         $('openCaseButton').textContent = 'Повторить';
       }
-      $('openCaseButton').disabled = error.code === 'already_opened_today';
+      $('openCaseButton').disabled = error.code === 'already_opened_today' || error.code === 'model_unavailable';
+      if (error.code === 'model_unavailable') $('openCaseButton').textContent = 'Модель пока недоступна';
     } finally {
       state.busy = false;
     }

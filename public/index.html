@@ -126,6 +126,15 @@ button{font:inherit}
 @media(max-width:700px){.app{padding:14px 14px 38px}.hero{padding:32px 0 19px;display:block}.hero-note{display:none}.case-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.case-art{height:145px;padding:12px}.case-body{padding:12px}.case-body h3{font-size:15px}.case-meta{font-size:8px}.case-body p{font-size:10px}.case-preview{gap:3px;margin:11px 0}.mini-model{width:25px;height:25px}.case-body .primary{padding:10px 8px;font-size:10px}.balance{min-width:80px;padding:7px 9px}.balance strong{font-size:13px}.brand{font-size:14px}.two-col{grid-template-columns:1fr 1fr}.nav button{padding:9px 11px;font-size:11px}}
 @media(max-width:380px){.case-grid{grid-template-columns:1fr}.case-art{height:175px}.balances{gap:5px}.balance{min-width:70px}.balance span{font-size:8px}}
 
+.rocket-stage{height:180px;position:relative;overflow:hidden;border:1px solid #28563a;border-radius:14px;background:radial-gradient(ellipse at 20% 20%,#173d25,#07110a 70%);margin-bottom:14px}
+.rocket-stars{position:absolute;inset:15px;color:#8be9a6;font-size:14px;letter-spacing:6px;opacity:.7}
+.rocket-ship{position:absolute;left:7%;top:68%;z-index:2;font-size:40px;filter:drop-shadow(0 8px 12px #0009);transform:rotate(-25deg)}
+.rocket-horizon{position:absolute;left:-10%;right:-10%;bottom:-90px;height:130px;border-radius:50%;background:radial-gradient(ellipse at center,#24633a,#0b1b10 70%)}
+.rocket-stage.running .rocket-ship{animation:rocket-flight 8s ease-in-out forwards}
+.rocket-stage.complete .rocket-ship{left:84%;top:21%;transform:rotate(-20deg)}
+@keyframes rocket-flight{0%{left:7%;top:68%;transform:rotate(-25deg)}35%{left:34%;top:45%;transform:rotate(-18deg)}70%{left:61%;top:28%;transform:rotate(-15deg)}100%{left:84%;top:21%;transform:rotate(-20deg)}}
+.rocket-readout{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;margin-bottom:10px;border:1px solid #28563a;border-radius:11px;background:#0b170f;color:#93b39b;font-size:11px}
+.rocket-readout strong{color:#6aefa0;font-size:17px;font-variant-numeric:tabular-nums}
 .case-price{display:flex;justify-content:space-between;align-items:center;margin:10px 0 8px;padding:9px 10px;border:1px solid #28563a;border-radius:10px;background:#0a170e;color:#94b79d;font-size:10px}
 .case-price strong{color:#6aefa0;font-size:11px}
 .model-group{padding:12px;border:1px solid #23422d;border-radius:13px;background:#09130c}
@@ -213,6 +222,7 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
   <button class="active" data-tab="cases">Кейсы</button>
   <button data-tab="inventory">Инвентарь</button>
   <button data-tab="profile">Профиль</button>
+  <button data-tab="rocket">Ракета</button>
 </nav>
 
 <section class="page" id="page-cases">
@@ -229,6 +239,20 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
 <section class="page" id="page-profile" hidden>
   <div class="section-head"><div><h2>Профиль коллекционера</h2><p>Прогресс и внутренние балансы</p></div></div>
   <div id="profileRoot"></div>
+</section>
+
+<section class="page" id="page-rocket" hidden>
+  <div class="section-head"><div><h2>Rocket Run</h2><p>Аркадный полёт без ставок, списаний и денежных призов</p></div></div>
+  <div class="panel">
+    <div class="rocket-stage" id="rocketStage">
+      <div class="rocket-stars">✦　·　✧　　　·　✦　　·　✧</div>
+      <div class="rocket-ship" id="rocketShip">🚀</div>
+      <div class="rocket-horizon"></div>
+    </div>
+    <div class="rocket-readout"><span>Время полёта</span><strong id="rocketTime">0.0 сек</strong></div>
+    <p class="status" id="rocketStatus">Запусти ракету и посмотри её полёт. Результат носит только визуальный характер и не влияет на баланс.</p>
+    <button class="primary full" id="rocketStart">Запустить ракету</button>
+  </div>
 </section>
 
 <div class="footer">
@@ -314,8 +338,7 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
   function canOpen(caseId) {
     const c = state.catalogue && state.catalogue.cases.find(item => item.id === caseId);
     if (!c || !state.user || alreadyOpened(caseId) || state.busy) return false;
-    const nextGift = c.gifts[getCount(caseId) % c.gifts.length];
-    return Boolean(nextGift && nextGift.models && nextGift.models.length);
+    return c.gifts.every(gift => Array.isArray(gift.models) && gift.models.length > 0);
   }
 
   function renderBalances() {
@@ -444,6 +467,7 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
       }
     }
     track.innerHTML = cards.join('');
+    wireImageFallback(track);
     track.style.transition = 'none';
     track.style.transform = 'translateX(0px)';
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
@@ -453,6 +477,7 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
     track.style.transform = 'translateX(' + (-Math.max(0,distance)) + 'px)';
     await new Promise(resolve => setTimeout(resolve,5000));
     $('resultImage').innerHTML = imgOrEmoji(targetGift,targetModel);
+    wireImageFallback($('resultImage'));
     $('resultName').textContent = item.modelName || item.giftName;
     $('resultMeta').textContent = (item.rarity || 'Telegram collectible model preview') + ' · добавлено в инвентарь';
     $('openingResult').classList.add('show');
@@ -490,6 +515,36 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
       state.busy = false;
     }
   }
+
+  let rocketTimer = null;
+  function launchRocket() {
+    if (rocketTimer) return;
+    const stage = $('rocketStage');
+    const button = $('rocketStart');
+    const output = $('rocketTime');
+    const status = $('rocketStatus');
+    stage.classList.remove('running');
+    void stage.offsetWidth;
+    stage.classList.add('running');
+    button.disabled = true;
+    button.textContent = 'Ракета летит…';
+    status.textContent = 'Полёт идёт. Это аркадная анимация без ставок и игровых списаний.';
+    const startedAt = Date.now();
+    rocketTimer = setInterval(() => {
+      const elapsed = (Date.now() - startedAt) / 1000;
+      output.textContent = Math.min(8, elapsed).toFixed(1) + ' сек';
+      if (elapsed >= 8) {
+        clearInterval(rocketTimer);
+        rocketTimer = null;
+        stage.classList.remove('running');
+        stage.classList.add('complete');
+        button.disabled = false;
+        button.textContent = 'Запустить ещё раз';
+        status.textContent = 'Полёт завершён. Баланс и инвентарь не изменились.';
+      }
+    }, 100);
+  }
+  $('rocketStart').addEventListener('click', launchRocket);
 
   document.querySelectorAll('[data-tab]').forEach(button => {
     button.addEventListener('click',() => {

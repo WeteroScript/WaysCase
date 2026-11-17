@@ -63,6 +63,7 @@ const telegramStatus = {
 
 let database = { version: 1, users: {} };
 let writeQueue = Promise.resolve();
+let databaseReady = Promise.resolve();
 
 function log(level, message, details = '') {
   const suffix = details ? ' | ' + details : '';
@@ -417,6 +418,7 @@ async function runTelegramPolling() {
 }
 
 async function handleApi(req, res, url) {
+  await databaseReady;
   if (req.method === 'GET' && url.pathname === '/health') {
     return json(res, 200, {
       ok: true,
@@ -425,6 +427,29 @@ async function handleApi(req, res, url) {
       storage: 'persistent-json',
       telegramBot: telegramStatus,
     });
+  }
+
+  if (req.method === 'GET' && url.pathname === '/api/model.svg') {
+    const giftId = String(url.searchParams.get('gift') || '');
+    const modelName = String(url.searchParams.get('model') || '');
+    const gift = giftById.get(giftId);
+    if (!gift || !modelName || modelName.length > 100) return json(res, 404, { ok: false, error: 'model_not_found' });
+    const cacheKey = giftId + ':' + modelName;
+    const cachedImage = modelImageCache.get(cacheKey);
+    if (cachedImage && cachedImage.expiresAt > Date.now()) {
+      res.writeHead(200, { 'content-type': 'image/svg+xml; charset=utf-8', 'cache-control': 'public, max-age=3600', 'x-content-type-options': 'nosniff' });
+      return res.end(cachedImage.svg);
+    }
+    const upstream = await fetch(GIFT_API + '/model/' + encodeURIComponent(giftId) + '/' + encodeURIComponent(modelName) + '.svg', {
+      headers: { 'accept': 'image/svg+xml', 'user-agent': 'WaysCase/1.0 (Gift Changes attribution)' },
+      signal: AbortSignal.timeout(12000),
+    });
+    if (!upstream.ok) return json(res, 502, { ok: false, error: 'model_source_unavailable' });
+    const svg = await upstream.text();
+    if (!svg.trim().startsWith('<svg') || svg.length > 1500000) return json(res, 502, { ok: false, error: 'invalid_model_asset' });
+    modelImageCache.set(cacheKey, { svg, expiresAt: Date.now() + 60 * 60 * 1000 });
+    res.writeHead(200, { 'content-type': 'image/svg+xml; charset=utf-8', 'cache-control': 'public, max-age=3600', 'x-content-type-options': 'nosniff' });
+    return res.end(svg);
   }
 
   if (req.method === 'GET' && url.pathname === '/api/catalog') {
@@ -445,8 +470,10 @@ async function handleApi(req, res, url) {
     const chosenCase = CASES.find(item => item.id === caseId);
     if (!chosenCase) return json(res, 404, { ok: false, error: 'case_not_found' });
 
-    const selectedGift = giftById.get(chosenCase.gifts[0]);
-    const models = await getGiftModels(selectedGift);
+    const modelLists = Object.fromEntries(await Promise.all(chosenCase.gifts.map(async giftId => {
+      const gift = giftById.get(giftId);
+      return [giftId, await getGiftModels(gift)];
+    })));
     const outcome = await mutateDatabase(db => {
       const user = ensureUser(db, identity);
       const currentDate = todayUtc();
@@ -458,7 +485,7 @@ async function handleApi(req, res, url) {
       }
       const previousOpens = Number(user.openCounts[caseId] || 0);
       const gift = giftById.get(chosenCase.gifts[previousOpens % chosenCase.gifts.length]);
-      const giftModels = gift.id === selectedGift.id ? models : [];
+      const giftModels = modelLists[gift.id] || [];
       const model = giftModels.length ? giftModels[previousOpens % giftModels.length] : null;
       const item = {
         id: randomUUID(),
@@ -556,7 +583,7 @@ function requestUrlForError(req) {
 
 server.listen(PORT, '0.0.0.0', () => {
   log('info', 'WaysCase server listening', 'port=' + PORT);
-  void loadDatabase()
+  databaseReady = loadDatabase()
     .then(() => runTelegramPolling())
     .catch(error => {
       log('error', 'Application startup failed', error.stack || error.message);

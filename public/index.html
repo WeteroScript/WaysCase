@@ -126,6 +126,23 @@ button{font:inherit}
 @media(max-width:700px){.app{padding:14px 14px 38px}.hero{padding:32px 0 19px;display:block}.hero-note{display:none}.case-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.case-art{height:145px;padding:12px}.case-body{padding:12px}.case-body h3{font-size:15px}.case-meta{font-size:8px}.case-body p{font-size:10px}.case-preview{gap:3px;margin:11px 0}.mini-model{width:25px;height:25px}.case-body .primary{padding:10px 8px;font-size:10px}.balance{min-width:80px;padding:7px 9px}.balance strong{font-size:13px}.brand{font-size:14px}.two-col{grid-template-columns:1fr 1fr}.nav button{padding:9px 11px;font-size:11px}}
 @media(max-width:380px){.case-grid{grid-template-columns:1fr}.case-art{height:175px}.balances{gap:5px}.balance{min-width:70px}.balance span{font-size:8px}}
 
+.case-price{display:flex;justify-content:space-between;align-items:center;margin:10px 0 8px;padding:9px 10px;border:1px solid #28563a;border-radius:10px;background:#0a170e;color:#94b79d;font-size:10px}
+.case-price strong{color:#6aefa0;font-size:11px}
+.model-group{padding:12px;border:1px solid #23422d;border-radius:13px;background:#09130c}
+.model-group+.model-group{margin-top:10px}
+.model-group-head{display:flex;align-items:center;justify-content:space-between;gap:10px;margin-bottom:10px}
+.model-group-head strong{font-size:13px}
+.model-group-head small{font-size:10px;color:#8eaa96}
+.model-grid{display:grid;grid-template-columns:repeat(auto-fill,minmax(112px,1fr));gap:8px}
+.model-card{min-width:0;padding:8px;border:1px solid #294a34;border-radius:10px;background:#102016;text-align:center}
+.model-image{height:88px;display:grid;place-items:center;overflow:hidden;border-radius:8px;background:radial-gradient(ellipse at center,#1c4a2d,#0b1b11)}
+.model-image img{width:100%;height:100%;object-fit:contain}
+.model-image span{font-size:27px}
+.model-card strong{display:block;margin-top:7px;font-size:10px;line-height:1.35;overflow-wrap:anywhere}
+.model-card small{display:block;margin-top:4px;color:#8fbe9d;font-size:9px}
+.inventory-note{margin-top:7px!important;color:#789b83!important;font-size:9px!important}
+@media(max-width:700px){.model-grid{grid-template-columns:repeat(2,minmax(0,1fr))}}
+
 /* WaysCase black / green identity */
 :root{color-scheme:dark;background:#050907;color:#e8f5ec}
 body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),radial-gradient(ellipse at 4% 36%,#0b2418 0,transparent 34%),#050907}
@@ -275,9 +292,19 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
   }
   function imgOrEmoji(gift, model) {
     const url = model && model.imageUrl ? model.imageUrl : gift && gift.models && gift.models[0] ? gift.models[0].imageUrl : null;
-    if (url) return '<img src="' + esc(url) + '" alt="' + esc(gift.name) + '" loading="lazy">';
+    if (url) return '<img src="' + esc(url) + '" alt="' + esc(gift.name) + '" data-fallback="' + esc(gift.emoji || '✦') + '" loading="lazy">';
     return '<span>' + esc(gift.emoji || '✦') + '</span>';
   }
+  function wireImageFallback(root) {
+    root.querySelectorAll('img[data-fallback]').forEach(img => {
+      img.addEventListener('error', () => {
+        const fallback = document.createElement('span');
+        fallback.textContent = img.dataset.fallback || '✦';
+        img.replaceWith(fallback);
+      }, { once: true });
+    });
+  }
+
   function getCount(caseId) {
     return Number((state.user && state.user.openCounts && state.user.openCounts[caseId]) || 0);
   }
@@ -315,11 +342,13 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
       }).join('');
       const modelCount = c.gifts.reduce((sum,g) => sum + (g.models ? g.models.length : 0), 0);
       return '<article class="case-card"><div class="case-art">' + art + '</div><div class="case-body">' +
-        '<div class="case-meta"><span>COLLECTION ' + String(c.number).padStart(2,'0') + '</span><span class="count">' + c.gifts.length + ' GIFTS</span></div>' +
+        '<div class="case-meta"><span>CASE ' + String(c.number).padStart(2,'0') + '</span><span class="count">' + c.gifts.length + ' GIFTS</span></div>' +
+        '<div class="case-price"><span>Цена открытия</span><strong>Бесплатно</strong></div>' +
         '<h3>' + esc(c.title) + '</h3><p>' + esc(c.subtitle) + '</p>' +
-        '<div class="case-preview">' + previews + '<small>' + modelCount + ' models indexed</small></div>' +
-        '<button class="primary full" data-case="' + esc(c.id) + '">' + (locked ? 'Открыто сегодня ✓' : (modelReady ? 'Открыть коллекцию' : 'Модели загружаются')) + '</button></div></article>';
+        '<div class="case-preview">' + previews + '<small>' + modelCount + ' моделей</small></div>' +
+        '<button class="primary full" data-case="' + esc(c.id) + '">Посмотреть</button></div></article>';
     }).join('');
+    wireImageFallback(root);
   }
 
   function renderInventory() {
@@ -333,7 +362,7 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
       const gift = giftForId(item.giftId) || { emoji:item.giftEmoji || '✦', name:item.giftName, models:[] };
       const model = item.modelImageUrl ? {imageUrl:item.modelImageUrl} : null;
       const date = new Date(item.receivedAt).toLocaleDateString('ru-RU');
-      return '<article class="inventory-item"><div class="inventory-image">' + imgOrEmoji(gift, model) + '</div><h3>' + esc(item.modelName || item.giftName) + '</h3><p>' + esc(item.caseName) + ' · ' + esc(date) + '</p><p>' + esc(item.rarity || 'Collectible gift') + '</p></article>';
+      return '<article class="inventory-item"><div class="inventory-image">' + imgOrEmoji(gift, model) + '</div><h3>' + esc(item.modelName || item.giftName) + '</h3><p>' + esc(item.caseName) + ' · ' + esc(date) + '</p><p>' + esc(item.rarity || 'Collectible gift') + '</p><p class="inventory-note">Коллекционная запись · не продаётся</p></article>';
     }).join('') + '</div>';
   }
 
@@ -346,7 +375,7 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
     const claimed = Boolean(state.user.starterStarsClaimed);
     root.innerHTML = '<div class="panel"><div class="profile-head"><div class="avatar">' + esc(name.slice(0,1).toUpperCase()) + '</div><div><h2>' + esc(name) + '</h2><p>' + esc(handle) + '</p></div></div>' +
       '<div class="two-col"><div class="balance-large"><span>⭐ INTERNAL STARS</span><strong>' + Number(b.stars).toLocaleString('ru-RU') + '</strong></div><div class="balance-large"><span>TON POINTS</span><strong>' + Number(b.ton).toLocaleString('ru-RU') + '</strong></div></div>' +
-      (claimed ? '<p class="status">Стартовый бонус 10 000 Stars уже получен.</p>' : '<div style="margin-top:16px"><button class="primary full" id="claimStarterStars">Получить 10 000 Stars</button><p class="status">Одноразовый стартовый бонус для внутреннего прогресса WaysCase.</p></div>') +
+      (claimed ? '<p class="status">Стартовый бонус 10 000 Stars уже получен.</p>' : '<div style="margin-top:16px"><button class="primary full" id="claimStarterStars">Получить тестовый баланс</button><p class="status">Одноразовый бонус: 10 000 внутренних Stars для тестирования интерфейса WaysCase.</p></div>') +
       '<p>Всего открытий: <strong>' + Number(state.user.totalOpens || 0) + '</strong></p>' +
       '<p class="fine-print">Stars и TON здесь — внутренние очки WaysCase, а не Telegram Stars или криптовалюта TON. Они не продаются, не переводятся и не выводятся. Открытия бесплатные и не расходуют баланс.</p></div>';
   }
@@ -374,13 +403,14 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
       ? 'Эта коллекция уже открыта сегодня. Следующее бесплатное открытие доступно после смены даты UTC.'
       : 'Шанс каждого доступного типа подарка: ' + giftChance.toFixed(1) + '%. После выбора типа все его модели имеют равный шанс.';
     $('modalGiftList').innerHTML = c.gifts.map(g => {
-      const m = g.models && g.models.length ? g.models[0] : null;
-      const rarity = m ? m.rarity : (g.models && g.models.length === 0 ? 'Модели загружаются' : 'Collectible');
-      const modelCount = g.models ? g.models.length : 0;
-      return '<div class="gift-row"><div class="gift-thumb">' + imgOrEmoji(g,m) + '</div><div class="gift-text"><strong>' + esc(g.name) + '</strong><small>' + modelCount + ' model variants indexed</small></div><span class="rarity">' + esc(rarity) + '</span></div>';
+      const models = Array.isArray(g.models) ? g.models : [];
+      const modelCards = models.map(m => '<article class="model-card"><div class="model-image">' + imgOrEmoji(g,m) + '</div><strong>' + esc(m.telegramName || m.name) + '</strong><small>' + esc(m.rarity || 'Collectible') + '</small></article>').join('');
+      return '<section class="model-group"><div class="model-group-head"><strong>' + esc(g.name) + '</strong><small>' + models.length + ' моделей</small></div>' +
+        (models.length ? '<div class="model-grid">' + modelCards + '</div>' : '<p class="status">Модели этого подарка пока недоступны.</p>') + '</section>';
     }).join('');
+    wireImageFallback($('modalGiftList'));
     $('openCaseButton').disabled = !canOpen(c.id);
-    $('openCaseButton').textContent = alreadyOpened(c.id) ? 'Уже открыто сегодня' : (readyGifts.length === c.gifts.length ? 'Открыть бесплатно' : 'Каталог загружается');
+    $('openCaseButton').textContent = alreadyOpened(c.id) ? 'Уже открыто сегодня' : (readyGifts.length === c.gifts.length ? 'Открыть бесплатно' : 'Модели загружаются');
     $('openCaseButton').hidden = false;
     $('openingStage').classList.remove('show');
     $('openingResult').classList.remove('show');

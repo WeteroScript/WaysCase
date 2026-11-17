@@ -12,7 +12,8 @@ from aiogram.types import InlineKeyboardButton, InlineKeyboardMarkup, Message, W
 from dotenv import load_dotenv
 
 load_dotenv()
-logging.basicConfig(level=logging.INFO)
+logging.basicConfig(level=logging.INFO, format="%(asctime)s %(levelname)s [wayscase.bot] %(message)s")
+logger = logging.getLogger("wayscase.bot")
 
 BOT_TOKEN = os.getenv("BOT_TOKEN", "").strip()
 DEFAULT_WEBAPP_URL = "https://bot-1794945234-9845-weterochina.bothost.tech/"
@@ -44,14 +45,22 @@ async def send_welcome(message: Message) -> None:
 
 
 async def main() -> None:
+    logger.info("BOT STARTING; WEBAPP_URL=%s", WEBAPP_URL)
     validate_config()
     bot = Bot(BOT_TOKEN, default=DefaultBotProperties(parse_mode=ParseMode.HTML))
     dispatcher = Dispatcher()
     dispatcher.message.register(send_welcome, CommandStart())
     dispatcher.message.register(send_welcome, Command("menu"))
     try:
+        me = await bot.get_me()
+        logger.info("BOT AUTH OK id=%s username=@%s", me.id, me.username)
+        logger.info("POLLING STARTING")
         await dispatcher.start_polling(bot, allowed_updates=dispatcher.resolve_used_update_types())
+    except Exception:
+        logger.exception("BOT MAIN LOOP FAILED")
+        raise
     finally:
+        logger.info("BOT SHUTTING DOWN")
         await bot.session.close()
 
 

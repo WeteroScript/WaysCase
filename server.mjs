@@ -240,6 +240,7 @@ function ensureUser(db, identity) {
   user.inventory = Array.isArray(user.inventory) ? user.inventory : [];
   user.openCounts = user.openCounts || {};
   user.lastOpenDates = user.lastOpenDates || {};
+  user.starterStarsClaimed = Boolean(user.starterStarsClaimed);
   return user;
 }
 
@@ -251,6 +252,7 @@ function userSummary(user) {
     inventory: user.inventory.slice().reverse(),
     openCounts: user.openCounts,
     lastOpenDates: user.lastOpenDates,
+    starterStarsClaimed: Boolean(user.starterStarsClaimed),
     totalOpens: Object.values(user.openCounts).reduce((sum, count) => sum + Number(count || 0), 0),
   };
 }
@@ -494,6 +496,23 @@ async function handleApi(req, res, url) {
     return json(res, 200, { ok: true, user: summary });
   }
 
+  if (req.method === 'POST' && url.pathname === '/api/claim-starter-stars') {
+    const identity = authFromRequest(req);
+    const outcome = await mutateDatabase(db => {
+      const user = ensureUser(db, identity);
+      if (user.starterStarsClaimed) {
+        return { status: 409, body: { ok: false, error: 'starter_stars_already_claimed' } };
+      }
+      user.starterStarsClaimed = true;
+      user.balances.stars = Number(user.balances.stars || 0) + 10000;
+      return {
+        status: 200,
+        body: { ok: true, awarded: 10000, balances: user.balances, starterStarsClaimed: true },
+      };
+    });
+    return json(res, outcome.status, outcome.body);
+  }
+
   if (req.method === 'POST' && url.pathname === '/api/open') {
     const identity = authFromRequest(req);
     const body = await readJsonBody(req);
@@ -514,7 +533,7 @@ async function handleApi(req, res, url) {
           body: { ok: false, error: 'already_opened_today', nextOpenAt: nextUtcDay() },
         };
       }
-      const availableGifts = chosenCase.gifts
+      const previousOpens = Number(user.openCounts[caseId] || 0);\n      const availableGifts = chosenCase.gifts
         .map(giftId => ({ gift: giftById.get(giftId), models: modelLists[giftId] || [] }));
       if (availableGifts.some(entry => entry.models.length === 0)) {
         return {

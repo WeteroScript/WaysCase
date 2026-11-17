@@ -1,26 +1,26 @@
 # WaysCase
 
-Telegram Mini App for exploring collectible Telegram Gift models.
+Telegram Mini App for exploring collectible Telegram Gift model variants.
 
 ## Current application
 
 - Telegram bot /start opens the Mini App.
-- Telegram initData is verified on the server using the bot token before a personal profile, inventory, or balance is returned.
-- Ten curated collections are populated with collectible model variants from the independent Gift Changes catalogue.
-- Each collection has a horizontal scrolling reveal animation.
-- The next item follows a fixed, visible sequence. It is not random.
-- Each collection can be opened for free once per UTC day.
-- Opened items, per-case progress, and internal point balances are stored server-side.
-- Each free opening adds 10 internal Stars points and 1 internal TON point. Points are not spent to open a collection.
-- Inventory is persistent in the /data directory.
+- Telegram initData is verified on the server before a personal profile, inventory, and balances are returned.
+- Ten collections use model metadata and SVG previews from the independent Gift Changes catalogue.
+- Each collection has a horizontal roulette-style reveal animation.
+- Each collection has a free random gift draw once per UTC day. Gift types in that case have equal odds; model variants within the selected gift type are selected uniformly.
+- The available collection contents and odds are shown before opening.
+- Each free opening adds 10 internal Stars points and 1 internal TON point. The point balances are not spent on openings.
+- The profile has a one-time claim for 10,000 internal Stars points. The claim is stored server-side and cannot be repeated for the same Telegram account.
+- Gift entries, balances, and progress are saved to the persistent JSON store under /data.
 
 ## Important distinction
 
-WaysCase's Stars and TON counters are internal, non-transferable progression points. They are not Telegram Stars or Toncoin, cannot be purchased, transferred, withdrawn, or exchanged.
+Stars and TON shown by WaysCase are internal non-transferable progression points. They are not Telegram Stars or Toncoin, cannot be purchased, transferred, withdrawn, exchanged, or sold.
 
-The catalogue displays model previews of real Telegram collectible gift types. A WaysCase inventory entry is a record inside this app; it does not transfer, mint, issue, or prove ownership of an NFT in Telegram or on the TON blockchain.
+The random draw is free. There are no deposits, wagers, paid random rewards, or cash-outs. Gift records in the WaysCase inventory are collection records for the Mini App; they do not mint, transfer, or prove ownership of an NFT in Telegram or on the TON blockchain. The app does not offer gift sale or exchange for value.
 
-Gift model data and SVG previews are supplied by the independent Gift Changes project (https://t.me/GiftChangesAPI). Gift Changes is not Telegram. The external model service must be reachable for the model previews to load.
+Gift model data and SVG previews are supplied by the independent Gift Changes project (https://t.me/GiftChangesAPI). Gift Changes is not Telegram. The upstream catalogue must be reachable for live model variants and previews.
 
 ## Environment
 
@@ -39,9 +39,10 @@ Build the included Dockerfile and expose port 3000. The image declares /data as 
 The bot and web application run in the same Node process. The app starts Telegram long polling after the database is ready. Logs include startup state, Telegram authorization, webhook state, polling errors, incoming commands, and successful /start replies.
 
 - GET /health reports application and bot status.
-- GET /api/catalog returns collection and current model metadata.
+- GET /api/catalog returns collection and model metadata.
 - GET /api/me returns the verified Telegram user's balances, inventory, and progress.
-- POST /api/open records one free, fixed-sequence opening for a collection per UTC day.
+- POST /api/claim-starter-stars grants 10,000 internal Stars once per Telegram account.
+- POST /api/open records one free random gift draw for a collection per UTC day.
 
 ## Local validation
 

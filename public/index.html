@@ -234,7 +234,12 @@ button{font:inherit}
   function alreadyOpened(caseId) {
     return Boolean(state.user && state.user.lastOpenDates && state.user.lastOpenDates[caseId] === today());
   }
-  function canOpen(caseId) { return Boolean(state.user) && !alreadyOpened(caseId) && !state.busy; }
+  function canOpen(caseId) {
+    const c = state.catalogue && state.catalogue.cases.find(item => item.id === caseId);
+    if (!c || !state.user || alreadyOpened(caseId) || state.busy) return false;
+    const nextGift = c.gifts[getCount(caseId) % c.gifts.length];
+    return Boolean(nextGift && nextGift.models && nextGift.models.length);
+  }
 
   function renderBalances() {
     const b = state.user && state.user.balances ? state.user.balances : null;
@@ -249,6 +254,8 @@ button{font:inherit}
       const count = getCount(c.id);
       const locked = alreadyOpened(c.id);
       const nextGift = c.gifts[count % c.gifts.length];
+      const modelReady = Boolean(nextGift.models && nextGift.models.length);
+      const canLaunch = canOpen(c.id);
       const art = c.cover && c.cover.imageUrl
         ? '<img src="' + esc(c.cover.imageUrl) + '" alt="' + esc(c.cover.name) + '" loading="lazy">'
         : '<div class="art-empty">' + esc((c.cover && c.cover.emoji) || '✦') + '</div>';
@@ -261,7 +268,7 @@ button{font:inherit}
         '<div class="case-meta"><span>COLLECTION ' + String(c.number).padStart(2,'0') + '</span><span class="count">' + c.gifts.length + ' GIFTS</span></div>' +
         '<h3>' + esc(c.title) + '</h3><p>' + esc(c.subtitle) + '</p>' +
         '<div class="case-preview">' + previews + '<small>' + modelCount + ' models indexed</small></div>' +
-        '<button class="primary full" data-case="' + esc(c.id) + '">' + (locked ? 'Открыто сегодня ✓' : 'Открыть коллекцию') + '</button></div></article>';
+        '<button class="primary full" data-case="' + esc(c.id) + '">' + (locked ? 'Открыто сегодня ✓' : (modelReady ? 'Открыть коллекцию' : 'Модели загружаются')) + '</button></div></article>';
     }).join('');
   }
 
@@ -323,7 +330,7 @@ button{font:inherit}
       return '<div class="gift-row"><div class="gift-thumb">' + imgOrEmoji(g,m) + '</div><div class="gift-text"><strong>' + esc(g.name) + '</strong><small>' + modelCount + ' model variants indexed</small></div><span class="rarity">' + esc(rarity) + '</span></div>';
     }).join('');
     $('openCaseButton').disabled = !canOpen(c.id);
-    $('openCaseButton').textContent = alreadyOpened(c.id) ? 'Уже открыто сегодня' : 'Открыть бесплатно';
+    $('openCaseButton').textContent = alreadyOpened(c.id) ? 'Уже открыто сегодня' : (nextModels.length ? 'Открыть бесплатно' : 'Модель пока недоступна');
     $('openCaseButton').hidden = false;
     $('openingStage').classList.remove('show');
     $('openingResult').classList.remove('show');
@@ -426,7 +433,8 @@ button{font:inherit}
     try {
       const catalogue = await api('/api/catalog');
       state.catalogue = catalogue;
-      $('catalogStatus').textContent = catalogue.modelSource + '. Загружено коллекций: ' + catalogue.cases.length + '.';
+      $('catalogStatus').textContent = catalogue.modelSource + '. Коллекций: ' + catalogue.cases.length + ', моделей: ' + Number(catalogue.modelCount || 0) + '.';
+      if (!catalogue.modelCount) $('catalogStatus').classList.add('error');
       renderCases();
     } catch (error) {
       $('catalogStatus').textContent = 'Не удалось загрузить каталог: ' + error.message;

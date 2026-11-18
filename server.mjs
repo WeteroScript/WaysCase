@@ -51,16 +51,16 @@ const GIFTS = [
 ];
 
 const CASES = [
-  { id: 'first-light', title: 'Бомж', subtitle: 'Базовый дроп без лишнего пафоса', cover: 'eternal-rose', gifts: ['eternal-rose', 'toy-bear', 'precious-peach', 'bunny-muffin'] },
-  { id: 'emerald-room', title: 'На чиле', subtitle: 'Спокойный коллекционный дроп', cover: 'plush-pepe', gifts: ['plush-pepe', 'bunny-muffin', 'magic-key', 'eternal-rose'] },
-  { id: 'royal-objects', title: 'Мажор', subtitle: 'Премиальная подборка Telegram Gifts', cover: 'durovs-cap', gifts: ['durovs-cap', 'diamond-ring', 'golden-star', 'toy-bear'] },
-  { id: 'love-letter', title: 'Симп', subtitle: 'Коллекция для романтичного вайба', cover: 'heart-locket', gifts: ['heart-locket', 'eternal-rose', 'diamond-ring', 'precious-peach'] },
-  { id: 'night-sky', title: 'Ночной флекс', subtitle: 'Неоновые и редкие модели', cover: 'golden-star', gifts: ['golden-star', 'magic-key', 'durovs-cap', 'plush-pepe'] },
-  { id: 'toy-world', title: 'Имба', subtitle: 'Яркие модели и необычные подарки', cover: 'toy-bear', gifts: ['toy-bear', 'bunny-muffin', 'plush-pepe', 'precious-peach'] },
-  { id: 'ice-crown', title: 'Лакшери', subtitle: 'Холодный премиум-вайб', cover: 'diamond-ring', gifts: ['diamond-ring', 'golden-star', 'toy-bear', 'heart-locket'] },
-  { id: 'neon-wave', title: 'Гигачад', subtitle: 'Неоновая подборка для флекса', cover: 'magic-key', gifts: ['magic-key', 'durovs-cap', 'precious-peach', 'eternal-rose'] },
-  { id: 'peach-club', title: 'На стиле', subtitle: 'Стильные коллекционные модели', cover: 'precious-peach', gifts: ['precious-peach', 'heart-locket', 'bunny-muffin', 'toy-bear'] },
-  { id: 'grand-archive', title: 'Топ-1', subtitle: 'Подборка заметных моделей', cover: 'golden-star', gifts: ['golden-star', 'plush-pepe', 'diamond-ring', 'magic-key'] },
+  { id: 'first-light', title: 'Бомж', subtitle: 'Базовый дроп без лишнего пафоса', cover: 'eternal-rose', gifts: ['eternal-rose'] },
+  { id: 'emerald-room', title: 'На чиле', subtitle: 'Спокойный коллекционный дроп', cover: 'plush-pepe', gifts: ['plush-pepe'] },
+  { id: 'royal-objects', title: 'Мажор', subtitle: 'Премиальная подборка Telegram Gifts', cover: 'durovs-cap', gifts: ['durovs-cap'] },
+  { id: 'love-letter', title: 'Симп', subtitle: 'Коллекция для романтичного вайба', cover: 'heart-locket', gifts: ['heart-locket'] },
+  { id: 'night-sky', title: 'Ночной флекс', subtitle: 'Неоновые и редкие модели', cover: 'golden-star', gifts: ['golden-star'] },
+  { id: 'toy-world', title: 'Имба', subtitle: 'Яркие модели и необычные подарки', cover: 'toy-bear', gifts: ['toy-bear'] },
+  { id: 'ice-crown', title: 'Лакшери', subtitle: 'Холодный премиум-вайб', cover: 'diamond-ring', gifts: ['diamond-ring'] },
+  { id: 'neon-wave', title: 'Гигачад', subtitle: 'Неоновая подборка для флекса', cover: 'magic-key', gifts: ['magic-key'] },
+  { id: 'peach-club', title: 'На стиле', subtitle: 'Стильные коллекционные модели', cover: 'precious-peach', gifts: ['precious-peach'] },
+  { id: 'grand-archive', title: 'Топ-1', subtitle: 'Подборка заметных моделей', cover: 'golden-star', gifts: ['golden-star'] },
 ];
 
 const giftById = new Map(GIFTS.map(gift => [gift.id, gift]));
@@ -241,6 +241,7 @@ function ensureUser(db, identity) {
   user.openCounts = user.openCounts || {};
   user.lastOpenDates = user.lastOpenDates || {};
   user.starterStarsClaimed = Boolean(user.starterStarsClaimed);
+  user.starterTonClaimed = Boolean(user.starterTonClaimed);
   return user;
 }
 
@@ -253,6 +254,7 @@ function userSummary(user) {
     openCounts: user.openCounts,
     lastOpenDates: user.lastOpenDates,
     starterStarsClaimed: Boolean(user.starterStarsClaimed),
+    starterTonClaimed: Boolean(user.starterTonClaimed),
     totalOpens: Object.values(user.openCounts).reduce((sum, count) => sum + Number(count || 0), 0),
   };
 }
@@ -500,14 +502,18 @@ async function handleApi(req, res, url) {
     const identity = authFromRequest(req);
     const outcome = await mutateDatabase(db => {
       const user = ensureUser(db, identity);
-      if (user.starterStarsClaimed) {
-        return { status: 409, body: { ok: false, error: 'starter_stars_already_claimed' } };
+      const awardedStars = user.starterStarsClaimed ? 0 : 10000;
+      const awardedTon = user.starterTonClaimed ? 0 : 500;
+      if (!awardedStars && !awardedTon) {
+        return { status: 409, body: { ok: false, error: 'starter_balance_already_claimed' } };
       }
       user.starterStarsClaimed = true;
-      user.balances.stars = Number(user.balances.stars || 0) + 10000;
+      user.starterTonClaimed = true;
+      user.balances.stars = Number(user.balances.stars || 0) + awardedStars;
+      user.balances.ton = Number(user.balances.ton || 0) + awardedTon;
       return {
         status: 200,
-        body: { ok: true, awarded: 10000, balances: user.balances, starterStarsClaimed: true },
+        body: { ok: true, awardedStars, awardedTon, balances: user.balances, starterStarsClaimed: true, starterTonClaimed: true },
       };
     });
     return json(res, outcome.status, outcome.body);
@@ -543,9 +549,9 @@ async function handleApi(req, res, url) {
         };
       }
       // Free cosmetic draw: no points are spent, and all gift types in the collection have equal odds.
-      const selectedEntry = availableGifts[randomInt(availableGifts.length)];
+      const selectedEntry = availableGifts[0];
       const gift = selectedEntry.gift;
-      const model = selectedEntry.models[randomInt(selectedEntry.models.length)];
+      const model = selectedEntry.models[0];
       const item = {
         id: randomUUID(),
         giftId: gift.id,
@@ -571,7 +577,7 @@ async function handleApi(req, res, url) {
           item,
           balances: user.balances,
           totalOpens: Object.values(user.openCounts).reduce((sum, count) => sum + Number(count || 0), 0),
-          odds: { giftTypePercent: 100 / availableGifts.length, giftTypes: availableGifts.length, modelVariantSelection: 'uniform within selected gift' },
+          odds: { giftTypePercent: 100, giftTypes: 1, modelVariantSelection: 'fixed featured model' },
           nextOpenAt: nextUtcDay(),
         },
       };

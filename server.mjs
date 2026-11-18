@@ -51,16 +51,16 @@ const GIFTS = [
 ];
 
 const CASES = [
-  { id: 'first-light', title: 'Бомж', subtitle: 'Базовый дроп без лишнего пафоса', cover: 'eternal-rose', gifts: ['eternal-rose'] },
-  { id: 'emerald-room', title: 'На чиле', subtitle: 'Спокойный коллекционный дроп', cover: 'plush-pepe', gifts: ['plush-pepe'] },
-  { id: 'royal-objects', title: 'Мажор', subtitle: 'Премиальная подборка Telegram Gifts', cover: 'durovs-cap', gifts: ['durovs-cap'] },
-  { id: 'love-letter', title: 'Симп', subtitle: 'Коллекция для романтичного вайба', cover: 'heart-locket', gifts: ['heart-locket'] },
-  { id: 'night-sky', title: 'Ночной флекс', subtitle: 'Неоновые и редкие модели', cover: 'golden-star', gifts: ['golden-star'] },
-  { id: 'toy-world', title: 'Имба', subtitle: 'Яркие модели и необычные подарки', cover: 'toy-bear', gifts: ['toy-bear'] },
-  { id: 'ice-crown', title: 'Лакшери', subtitle: 'Холодный премиум-вайб', cover: 'diamond-ring', gifts: ['diamond-ring'] },
-  { id: 'neon-wave', title: 'Гигачад', subtitle: 'Неоновая подборка для флекса', cover: 'magic-key', gifts: ['magic-key'] },
-  { id: 'peach-club', title: 'На стиле', subtitle: 'Стильные коллекционные модели', cover: 'precious-peach', gifts: ['precious-peach'] },
-  { id: 'grand-archive', title: 'Топ-1', subtitle: 'Подборка заметных моделей', cover: 'golden-star', gifts: ['golden-star'] },
+  { id: 'first-light', title: 'Бомж', subtitle: 'Базовый дроп без лишнего пафоса', cover: 'eternal-rose', gifts: ['eternal-rose', 'plush-pepe', 'bunny-muffin'] },
+  { id: 'emerald-room', title: 'На чиле', subtitle: 'Спокойный коллекционный дроп', cover: 'plush-pepe', gifts: ['plush-pepe', 'toy-bear', 'magic-key', 'precious-peach'] },
+  { id: 'royal-objects', title: 'Мажор', subtitle: 'Премиальная подборка Telegram Gifts', cover: 'durovs-cap', gifts: ['durovs-cap', 'diamond-ring', 'golden-star', 'eternal-rose', 'heart-locket'] },
+  { id: 'love-letter', title: 'Симп', subtitle: 'Коллекция для романтичного вайба', cover: 'heart-locket', gifts: ['heart-locket', 'precious-peach', 'bunny-muffin', 'golden-star'] },
+  { id: 'night-sky', title: 'Ночной флекс', subtitle: 'Неоновые и редкие модели', cover: 'golden-star', gifts: ['golden-star', 'magic-key', 'diamond-ring', 'durovs-cap', 'toy-bear', 'eternal-rose'] },
+  { id: 'toy-world', title: 'Имба', subtitle: 'Яркие модели и необычные подарки', cover: 'toy-bear', gifts: ['toy-bear', 'bunny-muffin', 'plush-pepe', 'precious-peach'] },
+  { id: 'ice-crown', title: 'Лакшери', subtitle: 'Холодный премиум-вайб', cover: 'diamond-ring', gifts: ['diamond-ring', 'durovs-cap', 'golden-star', 'magic-key', 'eternal-rose', 'heart-locket', 'bunny-muffin'] },
+  { id: 'neon-wave', title: 'Гигачад', subtitle: 'Неоновая подборка для флекса', cover: 'magic-key', gifts: ['magic-key', 'precious-peach', 'plush-pepe'] },
+  { id: 'peach-club', title: 'На стиле', subtitle: 'Стильные коллекционные модели', cover: 'precious-peach', gifts: ['precious-peach', 'heart-locket', 'toy-bear', 'bunny-muffin', 'durovs-cap'] },
+  { id: 'grand-archive', title: 'Топ-1', subtitle: 'Подборка заметных моделей', cover: 'golden-star', gifts: ['golden-star', 'diamond-ring', 'eternal-rose', 'magic-key', 'plush-pepe', 'bunny-muffin', 'heart-locket'] },
 ];
 
 const giftById = new Map(GIFTS.map(gift => [gift.id, gift]));
@@ -345,7 +345,8 @@ async function buildCatalogue() {
       subtitle: item.subtitle,
       gifts: item.gifts.map(giftId => {
         const gift = giftById.get(giftId);
-        return { ...gift, models: byGift[giftId] || [] };
+        // One fixed model variant is assigned to each gift type in the case catalogue.
+        return { ...gift, models: (byGift[giftId] || []).slice(0, 1) };
       }),
       cover: (() => {
         const gift = giftById.get(item.cover);
@@ -532,13 +533,6 @@ async function handleApi(req, res, url) {
     })));
     const outcome = await mutateDatabase(db => {
       const user = ensureUser(db, identity);
-      const currentDate = todayUtc();
-      if (user.lastOpenDates[caseId] === currentDate) {
-        return {
-          status: 409,
-          body: { ok: false, error: 'already_opened_today', nextOpenAt: nextUtcDay() },
-        };
-      }
       const previousOpens = Number(user.openCounts[caseId] || 0);
       const availableGifts = chosenCase.gifts
         .map(giftId => ({ gift: giftById.get(giftId), models: modelLists[giftId] || [] }));
@@ -548,8 +542,8 @@ async function handleApi(req, res, url) {
           body: { ok: false, error: 'model_unavailable', message: 'Не все модели коллекции доступны. Попробуй позже.' },
         };
       }
-      // Free cosmetic draw: no points are spent, and all gift types in the collection have equal odds.
-      const selectedEntry = availableGifts[0];
+      // Unlimited free cosmetic draw: no balance changes; each gift has equal selection odds.
+      const selectedEntry = availableGifts[Math.floor(Math.random() * availableGifts.length)];
       const gift = selectedEntry.gift;
       const model = selectedEntry.models[0];
       const item = {
@@ -565,11 +559,7 @@ async function handleApi(req, res, url) {
         receivedAt: new Date().toISOString(),
       };
       user.inventory.push(item);
-      if (user.inventory.length > 250) user.inventory = user.inventory.slice(-250);
       user.openCounts[caseId] = previousOpens + 1;
-      user.lastOpenDates[caseId] = currentDate;
-      user.balances.stars = Number(user.balances.stars || 0) + 10;
-      user.balances.ton = Number(user.balances.ton || 0) + 1;
       return {
         status: 200,
         body: {
@@ -577,8 +567,7 @@ async function handleApi(req, res, url) {
           item,
           balances: user.balances,
           totalOpens: Object.values(user.openCounts).reduce((sum, count) => sum + Number(count || 0), 0),
-          odds: { giftTypePercent: 100, giftTypes: 1, modelVariantSelection: 'fixed featured model' },
-          nextOpenAt: nextUtcDay(),
+          odds: { giftTypePercent: Number((100 / availableGifts.length).toFixed(2)), giftTypes: availableGifts.length, modelVariantSelection: 'one fixed model per gift' },
         },
       };
     });

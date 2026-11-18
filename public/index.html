@@ -35,9 +35,9 @@ button{font:inherit}
 .case-grid{display:grid;grid-template-columns:repeat(auto-fit,minmax(220px,1fr));gap:16px}
 .case-card{overflow:hidden;border:1px solid #292e43;border-radius:19px;background:linear-gradient(150deg,#191d2d,#10131f);transition:transform .2s,border-color .2s}
 .case-card:hover{transform:translateY(-3px);border-color:#725cae}
-.case-art{height:175px;padding:18px;display:grid;place-items:center;position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 60%,#554080 0,transparent 65%),linear-gradient(135deg,#25263e,#121522)}
+.case-art{height:175px;padding:22px;display:grid;place-items:center;position:relative;overflow:hidden;background:radial-gradient(ellipse at 50% 60%,#554080 0,transparent 65%),linear-gradient(135deg,#25263e,#121522)}
 .case-art:after{content:"";position:absolute;inset:10px;border:1px solid #ffffff0d;border-radius:13px;pointer-events:none}
-.case-art img{width:100%;height:100%;object-fit:contain;filter:drop-shadow(0 15px 23px #0009);position:relative;z-index:1}
+.case-art img{width:100%;height:100%;max-width:132px;max-height:132px;padding:10px;object-fit:contain;filter:drop-shadow(0 15px 23px #0009);position:relative;z-index:1}
 .art-empty{font-size:66px;filter:drop-shadow(0 12px 15px #0009)}
 .case-body{padding:15px}
 .case-meta{display:flex;justify-content:space-between;gap:8px;color:#a68de4;font-size:9px;font-weight:800;letter-spacing:1.2px}
@@ -123,7 +123,7 @@ button{font:inherit}
 .result strong{display:block}
 .result small{display:block;color:#a99bc9;font-size:10px;margin-top:4px}
 .notice{margin-top:12px;color:#9ba4ba;font-size:10px;line-height:1.55}
-@media(max-width:700px){.app{padding:14px 14px 38px}.hero{padding:32px 0 19px;display:block}.hero-note{display:none}.case-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.case-art{height:145px;padding:12px}.case-body{padding:12px}.case-body h3{font-size:15px}.case-meta{font-size:8px}.case-body p{font-size:10px}.case-preview{gap:3px;margin:11px 0}.mini-model{width:25px;height:25px}.case-body .primary{padding:10px 8px;font-size:10px}.balance{min-width:80px;padding:7px 9px}.balance strong{font-size:13px}.brand{font-size:14px}.two-col{grid-template-columns:1fr 1fr}.nav button{padding:9px 11px;font-size:11px}}
+@media(max-width:700px){.app{padding:14px 14px 38px}.hero{padding:32px 0 19px;display:block}.hero-note{display:none}.case-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.case-art{height:145px;padding:20px}.case-body{padding:12px}.case-body h3{font-size:15px}.case-meta{font-size:8px}.case-body p{font-size:10px}.case-preview{gap:3px;margin:11px 0}.mini-model{width:25px;height:25px}.case-body .primary{padding:10px 8px;font-size:10px}.balance{min-width:80px;padding:7px 9px}.balance strong{font-size:13px}.brand{font-size:14px}.two-col{grid-template-columns:1fr 1fr}.nav button{padding:9px 11px;font-size:11px}}
 @media(max-width:380px){.case-grid{grid-template-columns:1fr}.case-art{height:175px}.balances{gap:5px}.balance{min-width:70px}.balance span{font-size:8px}}
 
 .rocket-stage{height:180px;position:relative;overflow:hidden;border:1px solid #28563a;border-radius:14px;background:radial-gradient(ellipse at 20% 20%,#173d25,#07110a 70%);margin-bottom:14px}
@@ -212,6 +212,16 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
 .footer a{color:#69e99a}
 .error{color:#ffaaaa}
 
+
+.case-card-actions{display:grid;grid-template-columns:1fr 44px;gap:9px;margin-top:14px}
+.case-card-actions .primary{width:100%}
+.case-info{display:grid;place-items:center;width:44px;height:42px;border:1px solid #2e9d5a;border-radius:11px;background:linear-gradient(145deg,#102d1c,#0a1b11);color:#5be58c;cursor:pointer;transition:background .15s,border-color .15s,transform .15s}
+.case-info:hover{background:#153d25;border-color:#58e88c;transform:translateY(-1px)}
+.case-info svg{width:21px;height:21px;display:block}
+.case-art .model-image{width:100%;height:100%;max-width:138px;margin:auto;background:transparent}
+.case-art .model-image img{width:100%;height:100%;max-width:138px;max-height:138px;padding:8px;object-fit:contain}
+.case-art .model-image span{font-size:68px}
+
 </style>
 </head>
 <body>
@@ -262,9 +272,9 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
       <div class="rocket-horizon"></div>
     </div>
     <div class="rocket-stats">
-      <div class="rocket-readout"><span>Время полёта</span><strong id="rocketTime">0.0 сек</strong></div>
-      <div class="rocket-readout"><span>Высота</span><strong id="rocketAltitude">0 м</strong></div>
-      <div class="rocket-readout"><span>Рекорд сессии</span><strong id="rocketRecord">0.0 сек</strong></div>
+      <div class="rocket-readout"><span>Множитель раунда</span><strong id="rocketMultiplier">1.00x</strong></div>
+      <div class="rocket-readout"><span>Статус</span><strong id="rocketRoundState">Ожидание</strong></div>
+      <div class="rocket-readout"><span>Лучший x</span><strong id="rocketRecord">1.00x</strong></div>
     </div>
     <p class="status" id="rocketStatus">Запусти ракету. Полёт можно завершить вручную до случайного сбоя. Очки, баланс и инвентарь не затрагиваются.</p>
     <button class="primary full" id="rocketStart">Запустить ракету</button>
@@ -367,29 +377,19 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
     const root = $('caseGrid');
     if (!state.catalogue) return;
     root.innerHTML = state.catalogue.cases.map(c => {
-      const count = getCount(c.id);
-      const locked = alreadyOpened(c.id);
-      const nextGift = c.gifts[count % c.gifts.length];
-      const modelReady = Boolean(nextGift.models && nextGift.models.length);
-      const canLaunch = canOpen(c.id);
-      const art = c.cover && c.cover.imageUrl
-        ? '<img src="' + esc(c.cover.imageUrl) + '" alt="' + esc(c.cover.name) + '" loading="lazy">'
-        : '<div class="art-empty">' + esc((c.cover && c.cover.emoji) || '✦') + '</div>';
-      const previews = c.gifts.slice(0,3).map(g => {
-        const first = g.models && g.models.length ? g.models[0] : null;
-        return '<span class="mini-model">' + imgOrEmoji(g, first) + '</span>';
-      }).join('');
-      const modelCount = c.gifts.reduce((sum,g) => sum + (g.models ? g.models.length : 0), 0);
+      const gift = c.gifts[0] || c.cover;
+      const model = gift && Array.isArray(gift.models) ? gift.models[0] : null;
+      const art = gift ? imgOrEmoji(gift, model) : '<div class="art-empty">✦</div>';
+      const opened = alreadyOpened(c.id);
       return '<article class="case-card"><div class="case-art">' + art + '</div><div class="case-body">' +
-        '<div class="case-meta"><span>CASE ' + String(c.number).padStart(2,'0') + '</span><span class="count">' + c.gifts.length + ' GIFTS</span></div>' +
+        '<div class="case-meta"><span>CASE ' + String(c.number).padStart(2,'0') + '</span><span class="count">1 GIFT · 1 MODEL</span></div>' +
         '<div class="case-price"><span>Цена открытия</span><strong>Бесплатно</strong></div>' +
         '<h3>' + esc(c.title) + '</h3><p>' + esc(c.subtitle) + '</p>' +
-        '<div class="case-preview">' + previews + '<small>' + modelCount + ' моделей</small></div>' +
-        '<button class="primary full" data-case="' + esc(c.id) + '">Посмотреть</button></div></article>';
+        '<div class="case-card-actions"><button class="primary" data-open-case="' + esc(c.id) + '"' + (opened ? ' disabled' : '') + '>' + (opened ? 'Уже открыто' : 'Открыть') + '</button>' +
+        '<button class="case-info" data-info-case="' + esc(c.id) + '" aria-label="Содержимое кейса" title="Содержимое кейса"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 10.7v5.1M12 7.6h.01" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button></div></div></article>';
     }).join('');
     wireImageFallback(root);
   }
-
   function renderInventory() {
     const root = $('inventoryRoot');
     const items = state.user && Array.isArray(state.user.inventory) ? state.user.inventory : [];
@@ -411,10 +411,12 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
     const name = state.user.firstName || 'Collector';
     const handle = state.user.username ? '@' + state.user.username : 'Telegram account connected';
     const b = state.user.balances || {stars:0,ton:0};
-    const claimed = Boolean(state.user.starterStarsClaimed);
+    const starsClaimed = Boolean(state.user.starterStarsClaimed);
+    const tonClaimed = Boolean(state.user.starterTonClaimed);
+    const claimed = starsClaimed && tonClaimed;
     root.innerHTML = '<div class="panel"><div class="profile-head"><div class="avatar">' + esc(name.slice(0,1).toUpperCase()) + '</div><div><h2>' + esc(name) + '</h2><p>' + esc(handle) + '</p></div></div>' +
       '<div class="two-col"><div class="balance-large"><span>⭐ INTERNAL STARS</span><strong>' + Number(b.stars).toLocaleString('ru-RU') + '</strong></div><div class="balance-large"><span>TON POINTS</span><strong>' + Number(b.ton).toLocaleString('ru-RU') + '</strong></div></div>' +
-      (claimed ? '<p class="status">Стартовый бонус 10 000 Stars уже получен.</p>' : '<div style="margin-top:16px"><button class="primary full" id="claimStarterStars">Получить тестовый баланс</button><p class="status">Одноразовый бонус: 10 000 внутренних Stars для тестирования интерфейса WaysCase.</p></div>') +
+      (claimed ? '<p class="status">Тестовый баланс 10 000 Stars и 500 TON points уже получен.</p>' : '<div style="margin-top:16px"><button class="primary full" id="claimStarterStars">Получить тестовый баланс</button><p class="status">Одноразовый бонус: ' + (starsClaimed ? '500 TON points' : '10 000 Stars и 500 TON points') + '.</p></div>') +
       '<p>Всего открытий: <strong>' + Number(state.user.totalOpens || 0) + '</strong></p>' +
       '<p class="fine-print">Stars и TON здесь — внутренние очки WaysCase, а не Telegram Stars или криптовалюта TON. Они не продаются, не переводятся и не выводятся. Открытия бесплатные и не расходуют баланс.</p></div>';
   }
@@ -430,22 +432,21 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
     return state.catalogue.cases.find(c => c.id === id);
   }
 
-  function openModal(caseId) {
+  function openModal(caseId, showContents = false) {
     const c = getCase(caseId);
     if (!c) return;
     state.activeCase = c;
     const readyGifts = c.gifts.filter(g => g.models && g.models.length > 0);
     const giftChance = readyGifts.length ? (100 / readyGifts.length) : 0;
     $('modalTitle').textContent = c.title;
-    $('modalSubtitle').textContent = c.subtitle + ' · ' + c.gifts.length + ' gifts';
-    $('modalPreview').textContent = alreadyOpened(c.id)
-      ? 'Эта коллекция уже открыта сегодня. Следующее бесплатное открытие доступно после смены даты UTC.'
-      : 'Шанс каждого доступного типа подарка: ' + giftChance.toFixed(1) + '%. После выбора типа все его модели имеют равный шанс.';
-    $('modalGiftList').innerHTML = c.gifts.map(g => {
-      const models = Array.isArray(g.models) ? g.models : [];
-      const modelCards = models.map(m => '<article class="model-card"><div class="model-image">' + imgOrEmoji(g,m) + '</div><strong>' + esc(m.telegramName || m.name) + '</strong><small>' + esc(m.rarity || 'Collectible') + '</small></article>').join('');
-      return '<section class="model-group"><div class="model-group-head"><strong>' + esc(g.name) + '</strong><small>' + models.length + ' моделей</small></div>' +
-        (models.length ? '<div class="model-grid">' + modelCards + '</div>' : '<p class="status">Модели этого подарка пока недоступны.</p>') + '</section>';
+    $('modalSubtitle').textContent = c.subtitle + ' · 1 подарок · 1 модель';
+    $('modalPreview').textContent = showContents ? 'В кейсе один подарок и одна модель. Содержимое показано заранее.' : (alreadyOpened(c.id) ? 'Этот кейс уже открыт сегодня.' : 'Бесплатное открытие фиксированного предмета из превью.');
+    $('modalGiftList').hidden = !showContents;
+    $('orderNote').hidden = !showContents;
+    $('modalGiftList').innerHTML = c.gifts.slice(0,1).map(g => {
+      const model = Array.isArray(g.models) ? g.models[0] : null;
+      return '<section class="model-group"><div class="model-group-head"><strong>' + esc(g.name) + '</strong><small>1 модель</small></div>' +
+        (model ? '<div class="model-grid"><article class="model-card"><div class="model-image">' + imgOrEmoji(g,model) + '</div><strong>' + esc(model.telegramName || model.name) + '</strong><small>' + esc(model.rarity || 'Collectible') + '</small></article></div>' : '<p class="status">Модель этого подарка пока недоступна.</p>') + '</section>';
     }).join('');
     wireImageFallback($('modalGiftList'));
     $('openCaseButton').disabled = !canOpen(c.id);
@@ -543,8 +544,9 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
     rocketTimer = null;
 
     const elapsed = Math.min(rocketCrashAt, Math.max(0, (Date.now() - rocketStartedAt) / 1000));
-    $('rocketTime').textContent = elapsed.toFixed(1) + ' сек';
-    $('rocketAltitude').textContent = Math.round(elapsed * 250 + elapsed * elapsed * 18).toLocaleString('ru-RU') + ' м';
+    const multiplier = Math.max(1, 1 + elapsed * 0.12 + elapsed * elapsed * 0.018);
+    $('rocketMultiplier').textContent = multiplier.toFixed(2) + 'x';
+    $('rocketRoundState').textContent = crashed ? 'Сбой' : 'Завершён';
 
     const stage = $('rocketStage');
     const button = $('rocketStart');
@@ -553,12 +555,13 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
     stage.classList.add(crashed ? 'crashed' : 'complete');
 
     if (crashed) {
-      status.textContent = 'Случайный сбой: ракета разрушена. Раунд завершён. Баланс и инвентарь не изменились.';
+      $('rocketRoundState').textContent = 'Взрыв';
+      status.textContent = 'Случайный сбой на ' + multiplier.toFixed(2) + 'x. Раунд завершён. Баланс не изменился.';
       button.textContent = 'Повторить запуск';
     } else {
-      rocketRecord = Math.max(rocketRecord, elapsed);
-      $('rocketRecord').textContent = rocketRecord.toFixed(1) + ' сек';
-      status.textContent = 'Полёт завершён вручную. Лучший результат этой сессии: ' + rocketRecord.toFixed(1) + ' сек.';
+      rocketRecord = Math.max(rocketRecord, multiplier);
+      $('rocketRecord').textContent = rocketRecord.toFixed(2) + 'x';
+      status.textContent = 'Раунд завершён вручную на ' + multiplier.toFixed(2) + 'x. Это визуальный показатель.';
       button.textContent = 'Запустить ещё раз';
     }
     button.disabled = false;
@@ -582,16 +585,16 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
     stage.style.setProperty('--rocket-duration', rocketCrashAt.toFixed(2) + 's');
     stage.classList.add('running');
 
-    $('rocketTime').textContent = '0.0 сек';
-    $('rocketAltitude').textContent = '0 м';
+    $('rocketMultiplier').textContent = '1.00x';
+    $('rocketRoundState').textContent = 'В полёте';
     button.disabled = false;
     button.textContent = 'Завершить полёт';
     status.textContent = 'Ракета набирает высоту. Заверши полёт вручную до случайного сбоя.';
     
     rocketTimer = setInterval(() => {
       const elapsed = (Date.now() - rocketStartedAt) / 1000;
-      $('rocketTime').textContent = elapsed.toFixed(1) + ' сек';
-      $('rocketAltitude').textContent = Math.round(elapsed * 250 + elapsed * elapsed * 18).toLocaleString('ru-RU') + ' м';
+      const multiplier = Math.max(1, 1 + elapsed * 0.12 + elapsed * elapsed * 0.018);
+      $('rocketMultiplier').textContent = multiplier.toFixed(2) + 'x';
       if (elapsed >= rocketCrashAt) finishRocketRound(true);
     }, 50);
   }
@@ -628,8 +631,10 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
     }
   });
   $('caseGrid').addEventListener('click',event => {
-    const button = event.target.closest('[data-case]');
-    if (button) openModal(button.dataset.case);
+    const info = event.target.closest('[data-info-case]');
+    if (info) { openModal(info.dataset.infoCase, true); return; }
+    const open = event.target.closest('[data-open-case]');
+    if (open && !open.disabled) openModal(open.dataset.openCase, false);
   });
   $('openCaseButton').addEventListener('click',() => {
     if (state.activeCase) openCase(state.activeCase.id);

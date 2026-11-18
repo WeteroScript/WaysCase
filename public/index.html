@@ -130,13 +130,13 @@ button{font:inherit}
 .rocket-stars{position:absolute;inset:15px;color:#8be9a6;font-size:14px;letter-spacing:6px;opacity:.7}
 .rocket-ship{position:absolute;left:7%;top:68%;z-index:2;font-size:40px;filter:drop-shadow(0 8px 12px #0009);transform:rotate(-25deg)}
 .rocket-horizon{position:absolute;left:-10%;right:-10%;bottom:-90px;height:130px;border-radius:50%;background:radial-gradient(ellipse at center,#24633a,#0b1b10 70%)}
-.rocket-stage.running .rocket-ship{animation:rocket-flight var(--rocket-duration, 8s) linear forwards}
-.rocket-stage.complete .rocket-ship{left:84%;top:21%;transform:rotate(-20deg)}
+.rocket-stage.running .rocket-ship{transition:none}
+.rocket-stage.complete .rocket-ship{transform:rotate(-20deg)}
 .rocket-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:10px}
 .rocket-readout{flex-direction:column;align-items:flex-start;justify-content:center;gap:5px;margin-bottom:0;min-width:0}
 .rocket-readout span{font-size:10px}
 .rocket-readout strong{font-size:16px}
-.rocket-explosion{display:none;position:absolute;left:50%;top:38%;z-index:4;place-items:center;width:76px;height:76px;margin:-38px 0 0 -38px;border-radius:50%;background:radial-gradient(circle,#fff6ad 0,#ff9f36 28%,#ed4b28 55%,transparent 72%);color:#fff4d5;font-size:66px;line-height:1;text-shadow:0 0 18px #ff6b32;filter:drop-shadow(0 0 18px #ff6b32)}
+ .rocket-explosion{display:none;position:absolute;left:50%;top:38%;z-index:4;place-items:center;width:76px;height:76px;margin:-38px 0 0 -38px;border-radius:50%;background:radial-gradient(circle,#fff6ad 0,#ff9f36 28%,#ed4b28 55%,transparent 72%);color:#fff4d5;font-size:66px;line-height:1;text-shadow:0 0 18px #ff6b32;filter:drop-shadow(0 0 18px #ff6b32)}
 .rocket-stage.crashed .rocket-ship{animation:rocket-disintegrate .55s ease-out forwards}
 .rocket-stage.crashed .rocket-explosion{display:grid;animation:rocket-blast .65s ease-out forwards}
 @keyframes rocket-disintegrate{to{transform:translate(10px,-12px) scale(1.35) rotate(110deg);opacity:0;filter:blur(5px)}}
@@ -235,7 +235,7 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
 </header>
 
 <section class="hero">
-  <div><div class="eyebrow">COLLECTIBLE GIFT STUDIO</div><h1>Открывай.<br><em>Собирай модели.</em></h1><p>Коллекции реальных Telegram collectible gifts с модельными превью. Каждое бесплатное открытие имеет заранее заданный результат и сохраняется в твоём инвентаре.</p></div>
+  <div><div class="eyebrow">COLLECTIBLE GIFT STUDIO</div><h1>Открывай.<br><em>Собирай модели.</em></h1><p>Коллекции реальных Telegram collectible gifts с модельными превью. В каждом кейсе несколько подарков с закреплёнными моделями. При бесплатном открытии выбирается один подарок.</p></div>
   <div class="hero-note">10 коллекций<br>Бесплатное открытие<br>Постоянный инвентарь</div>
 </section>
 
@@ -282,7 +282,7 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
 </section>
 
 <div class="footer">
-  Внутренние Stars и TON — только игровые очки WaysCase: не являются Telegram Stars или криптовалютой TON, не покупаются, не переводятся и не выводятся. Открытия бесплатные, порядок подарков фиксирован, содержимое каждой коллекции показано заранее.<br><br>
+  Внутренние Stars и TON — только игровые очки WaysCase: не являются Telegram Stars или криптовалютой TON, не покупаются, не переводятся и не выводятся. Открытия бесплатные и не ограничены. В каждом кейсе 3–7 подарков; у каждого подарка одна закреплённая модель.<br><br>
   Модельные превью и данные: <a href="https://t.me/GiftChangesAPI" target="_blank" rel="noopener">Gift Changes</a>, независимый каталог данных Telegram Gifts. WaysCase не является официальным приложением Telegram. Запись в инвентаре не означает владение NFT и не создаёт подарок в Telegram.
 </div>
 </div>
@@ -359,11 +359,11 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
     return Number((state.user && state.user.openCounts && state.user.openCounts[caseId]) || 0);
   }
   function alreadyOpened(caseId) {
-    return Boolean(state.user && state.user.lastOpenDates && state.user.lastOpenDates[caseId] === today());
+    return false;
   }
   function canOpen(caseId) {
     const c = state.catalogue && state.catalogue.cases.find(item => item.id === caseId);
-    if (!c || !state.user || alreadyOpened(caseId) || state.busy) return false;
+    if (!c || !state.user || state.busy) return false;
     return c.gifts.every(gift => Array.isArray(gift.models) && gift.models.length > 0);
   }
 
@@ -380,12 +380,13 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
       const gift = c.gifts[0] || c.cover;
       const model = gift && Array.isArray(gift.models) ? gift.models[0] : null;
       const art = gift ? imgOrEmoji(gift, model) : '<div class="art-empty">✦</div>';
-      const opened = alreadyOpened(c.id);
+      const preview = c.gifts.slice(0, 4).map(g => '<div class="mini-model">' + imgOrEmoji(g, g.models && g.models[0]) + '</div>').join('');
       return '<article class="case-card"><div class="case-art">' + art + '</div><div class="case-body">' +
-        '<div class="case-meta"><span>CASE ' + String(c.number).padStart(2,'0') + '</span><span class="count">1 GIFT · 1 MODEL</span></div>' +
+        '<div class="case-meta"><span>CASE ' + String(c.number).padStart(2,'0') + '</span><span class="count">' + c.gifts.length + ' GIFTS · ' + c.gifts.length + ' MODELS</span></div>' +
         '<div class="case-price"><span>Цена открытия</span><strong>Бесплатно</strong></div>' +
         '<h3>' + esc(c.title) + '</h3><p>' + esc(c.subtitle) + '</p>' +
-        '<div class="case-card-actions"><button class="primary" data-open-case="' + esc(c.id) + '"' + (opened ? ' disabled' : '') + '>' + (opened ? 'Уже открыто' : 'Открыть') + '</button>' +
+        '<div class="case-preview">' + preview + '<small>+' + Math.max(0, c.gifts.length - 4) + ' ещё</small></div>' +
+        '<div class="case-card-actions"><button class="primary" data-open-case="' + esc(c.id) + '">Открыть</button>' +
         '<button class="case-info" data-info-case="' + esc(c.id) + '" aria-label="Содержимое кейса" title="Содержимое кейса"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 10.7v5.1M12 7.6h.01" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button></div></div></article>';
     }).join('');
     wireImageFallback(root);
@@ -439,24 +440,22 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
     const readyGifts = c.gifts.filter(g => g.models && g.models.length > 0);
     const giftChance = readyGifts.length ? (100 / readyGifts.length) : 0;
     $('modalTitle').textContent = c.title;
-    $('modalSubtitle').textContent = c.subtitle + ' · 1 подарок · 1 модель';
-    $('modalPreview').textContent = showContents ? 'В кейсе один подарок и одна модель. Содержимое показано заранее.' : (alreadyOpened(c.id) ? 'Этот кейс уже открыт сегодня.' : 'Бесплатное открытие фиксированного предмета из превью.');
+    $('modalSubtitle').textContent = c.subtitle + ' · ' + c.gifts.length + ' подарков · ' + c.gifts.length + ' моделей';
+    $('modalPreview').textContent = showContents ? 'В кейсе ' + c.gifts.length + ' подарков, у каждого закреплена одна модель.' : 'Бесплатное открытие: случайный подарок из содержимого кейса.';
     $('modalGiftList').hidden = !showContents;
     $('orderNote').hidden = !showContents;
-    $('modalGiftList').innerHTML = c.gifts.slice(0,1).map(g => {
+    $('modalGiftList').innerHTML = c.gifts.map(g => {
       const model = Array.isArray(g.models) ? g.models[0] : null;
       return '<section class="model-group"><div class="model-group-head"><strong>' + esc(g.name) + '</strong><small>1 модель</small></div>' +
         (model ? '<div class="model-grid"><article class="model-card"><div class="model-image">' + imgOrEmoji(g,model) + '</div><strong>' + esc(model.telegramName || model.name) + '</strong><small>' + esc(model.rarity || 'Collectible') + '</small></article></div>' : '<p class="status">Модель этого подарка пока недоступна.</p>') + '</section>';
     }).join('');
     wireImageFallback($('modalGiftList'));
     $('openCaseButton').disabled = !canOpen(c.id);
-    $('openCaseButton').textContent = alreadyOpened(c.id) ? 'Уже открыто сегодня' : (readyGifts.length === c.gifts.length ? 'Открыть бесплатно' : 'Модели загружаются');
+    $('openCaseButton').textContent = readyGifts.length === c.gifts.length ? 'Открыть бесплатно' : 'Модели загружаются';
     $('openCaseButton').hidden = false;
     $('openingStage').classList.remove('show');
     $('openingResult').classList.remove('show');
-    $('modalNotice').textContent = alreadyOpened(c.id)
-      ? 'Одна бесплатная прокрутка этой коллекции в день. Баланс не расходуется.'
-      : 'Бесплатно · внутренний баланс не расходуется. За открытие начисляется +10 Stars и +1 TON point.';
+    $('modalNotice').textContent = 'Бесплатно и без ограничений. Баланс не расходуется и не начисляется.';
     $('caseModal').classList.add('show');
   }
 
@@ -514,19 +513,13 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
       state.user = me.user;
       renderAll();
       $('modalPreview').textContent = 'Получен ' + (response.item.modelName || response.item.giftName) + '. Предмет сохранён в серверном инвентаре.';
-      $('openCaseButton').textContent = 'Уже открыто сегодня';
-      $('openCaseButton').disabled = true;
-      $('modalNotice').textContent = 'Начислено: +10 внутренних Stars и +1 TON point. Баланс не списывался.';
+      $('openCaseButton').textContent = 'Открыть ещё раз';
+      $('openCaseButton').disabled = false;
+      $('modalNotice').textContent = 'Получен подарок. Открытие бесплатное, баланс не изменился.';
     } catch (error) {
       $('modalNotice').textContent = error.message || 'Не удалось открыть коллекцию.';
-      if (error.code === 'already_opened_today') {
-        const me = await api('/api/me').catch(() => null);
-        if (me) { state.user = me.user; renderAll(); }
-        $('openCaseButton').textContent = 'Уже открыто сегодня';
-      } else {
-        $('openCaseButton').textContent = 'Повторить';
-      }
-      $('openCaseButton').disabled = error.code === 'already_opened_today' || error.code === 'model_unavailable';
+      $('openCaseButton').textContent = 'Повторить';
+      $('openCaseButton').disabled = error.code === 'model_unavailable';
       if (error.code === 'model_unavailable') $('openCaseButton').textContent = 'Модель пока недоступна';
     } finally {
       state.busy = false;
@@ -535,7 +528,8 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
 
   let rocketTimer = null;
   let rocketStartedAt = 0;
-  let rocketCrashAt = 0;
+  let rocketDuration = 0;
+  let rocketCrashMultiplier = 1;
   let rocketRecord = 0;
 
   function finishRocketRound(crashed) {
@@ -543,8 +537,9 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
     clearInterval(rocketTimer);
     rocketTimer = null;
 
-    const elapsed = Math.min(rocketCrashAt, Math.max(0, (Date.now() - rocketStartedAt) / 1000));
-    const multiplier = Math.max(1, 1 + elapsed * 0.12 + elapsed * elapsed * 0.018);
+    const elapsed = Math.min(rocketDuration, Math.max(0, (Date.now() - rocketStartedAt) / 1000));
+    const progress = crashed ? 1 : Math.min(1, elapsed / rocketDuration);
+    const multiplier = crashed ? rocketCrashMultiplier : 1 + (rocketCrashMultiplier - 1) * progress;
     $('rocketMultiplier').textContent = multiplier.toFixed(2) + 'x';
     $('rocketRoundState').textContent = crashed ? 'Сбой' : 'Завершён';
 
@@ -553,6 +548,17 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
     const status = $('rocketStatus');
     stage.classList.remove('running');
     stage.classList.add(crashed ? 'crashed' : 'complete');
+    if (crashed) {
+      const ship = $('rocketShip');
+      const shipRect = ship.getBoundingClientRect();
+      const stageRect = stage.getBoundingClientRect();
+      const x = shipRect.left - stageRect.left + shipRect.width / 2;
+      const y = shipRect.top - stageRect.top + shipRect.height / 2;
+      $('rocketExplosion').style.left = x + 'px';
+      $('rocketExplosion').style.top = y + 'px';
+      ship.style.left = (x - shipRect.width / 2) + 'px';
+      ship.style.top = (y - shipRect.height / 2) + 'px';
+    }
 
     if (crashed) {
       $('rocketRoundState').textContent = 'Взрыв';
@@ -581,22 +587,33 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
     void stage.offsetWidth;
 
     rocketStartedAt = Date.now();
-    rocketCrashAt = 4 + Math.random() * 8;
-    stage.style.setProperty('--rocket-duration', rocketCrashAt.toFixed(2) + 's');
+    rocketDuration = 4 + Math.random() * 8;
+    rocketCrashMultiplier = (100 + Math.floor(Math.random() * 9901)) / 100;
     stage.classList.add('running');
 
+    const ship = $('rocketShip');
+    ship.style.left = '7%';
+    ship.style.top = '68%';
+    $('rocketExplosion').style.left = '50%';
+    $('rocketExplosion').style.top = '38%';
     $('rocketMultiplier').textContent = '1.00x';
     $('rocketRoundState').textContent = 'В полёте';
     button.disabled = false;
     button.textContent = 'Завершить полёт';
-    status.textContent = 'Ракета набирает высоту. Заверши полёт вручную до случайного сбоя.';
+    status.textContent = 'Случайная точка сбоя выбрана. Ракета движется по сцене; баланс не затрагивается.';
     
     rocketTimer = setInterval(() => {
       const elapsed = (Date.now() - rocketStartedAt) / 1000;
-      const multiplier = Math.max(1, 1 + elapsed * 0.12 + elapsed * elapsed * 0.018);
+      const progress = Math.min(1, elapsed / rocketDuration);
+      const multiplier = 1 + (rocketCrashMultiplier - 1) * progress;
       $('rocketMultiplier').textContent = multiplier.toFixed(2) + 'x';
-      if (elapsed >= rocketCrashAt) finishRocketRound(true);
-    }, 50);
+      const ship = $('rocketShip');
+      const x = 7 + progress * 72;
+      const y = 68 - progress * 47;
+      ship.style.left = x + '%';
+      ship.style.top = y + '%';
+      if (progress >= 1) finishRocketRound(true);
+    }, 40);
   }
 
   $('rocketStart').addEventListener('click', launchRocket);

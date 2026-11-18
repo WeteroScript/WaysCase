@@ -385,7 +385,7 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
         '<div class="case-meta"><span>CASE ' + String(c.number).padStart(2,'0') + '</span><span class="count">' + c.gifts.length + ' GIFTS · ' + c.gifts.length + ' MODELS</span></div>' +
         '<div class="case-price"><span>Цена открытия</span><strong>Бесплатно</strong></div>' +
         '<h3>' + esc(c.title) + '</h3><p>' + esc(c.subtitle) + '</p>' +
-        '<div class="case-preview">' + preview + '<small>+' + Math.max(0, c.gifts.length - 4) + ' ещё</small></div>' +
+        '<div class="case-preview">' + preview + (c.gifts.length > 4 ? '<small>+' + (c.gifts.length - 4) + ' ещё</small>' : '') + '</div>' +
         '<div class="case-card-actions"><button class="primary" data-open-case="' + esc(c.id) + '">Открыть</button>' +
         '<button class="case-info" data-info-case="' + esc(c.id) + '" aria-label="Содержимое кейса" title="Содержимое кейса"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 10.7v5.1M12 7.6h.01" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button></div></div></article>';
     }).join('');

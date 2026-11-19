@@ -1,12 +1,14 @@
+import { parseMarket } from '../lib/market.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
 import { randomUUID } from 'node:crypto';
-import { cases, draw } from '../lib/catalog.mjs';
+import { buildCases, draw } from '../lib/catalog.mjs';
 import { startRound, cashOut, roundView } from '../lib/rocket.mjs';
 
 test('every ticket range agrees with published price-based odds and has a bundled WebP', () => {
-  for (const c of cases) {
+  const market = parseMarket(JSON.parse(readFileSync(new URL('../lib/fragment-snapshot.json',import.meta.url))));
+  for (const c of buildCases(market)) {
     assert.ok(c.gifts.length >= 10 && c.gifts.length <= 30);
     assert.equal(new Set(c.gifts.map(g => g.id)).size, c.gifts.length);
     let ticket = 0;

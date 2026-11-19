@@ -1,4 +1,6 @@
-import { cases as CASES, draw } from './lib/catalog.mjs';
+import { getMarket } from './lib/market.mjs';
+import { trade } from './lib/trades.mjs';
+import { buildCases, gifts, draw } from './lib/catalog.mjs';
 import { roundView, startRound, cashOut } from './lib/rocket.mjs';
 import http from 'node:http';
 import { readFile, stat, mkdir, writeFile, rename } from 'node:fs/promises';
@@ -34,6 +36,7 @@ const MIME = {
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
   '.webp': 'image/webp',
+  '.tgs': 'application/json',
   '.ico': 'image/x-icon',
 };
 
@@ -212,7 +215,7 @@ function userSummary(user) {
     firstName: user.firstName,
     username: user.username,
     balances: user.balances,
-    inventory: user.inventory.slice().reverse(),
+    inventory: user.inventory.filter(i => !i.spent).reverse(),
     openCounts: user.openCounts,
     lastOpenDates: user.lastOpenDates,
     starterStarsClaimed: Boolean(user.starterStarsClaimed),
@@ -350,7 +353,8 @@ async function handleApi(req, res, url) {
   }
 
   if (req.method === 'GET' && url.pathname === '/api/catalog') {
-    const catalogue = { cases: CASES };
+    const market = await getMarket();
+    const catalogue = { cases: buildCases(market), gifts, market };
     return json(res, 200, { ok: true, ...catalogue });
   }
 
@@ -396,22 +400,37 @@ async function handleApi(req, res, url) {
     return json(res, 200, result);
   }
 
+  if (req.method === 'POST' && ['/api/sell','/api/upgrade'].includes(url.pathname)) {
+    const identity = authFromRequest(req);
+    const body = await readJsonBody(req);
+    const market = await getMarket();
+    const result = await mutateDatabase(db => {
+      const user = ensureUser(db, identity);
+      const receipt = trade(user, url.pathname.slice(5), body, market);
+      return {ok:true,receipt,user:userSummary(user)};
+    });
+    return json(res,200,result);
+  }
+
   if (req.method === 'POST' && url.pathname === '/api/open') {
     const identity = authFromRequest(req);
     const body = await readJsonBody(req);
     const caseId = String(body?.caseId || '');
     const requestId = body?.requestId;
     if (typeof requestId !== 'string' || !/^[a-f0-9-]{36}$/i.test(requestId)) return json(res, 400, {ok:false, error:'invalid_request_id'});
-    const chosenCase = CASES.find(item => item.id === caseId);
+    const market = await getMarket();
+    const chosenCase = buildCases(market).find(item => item.id === caseId);
     if (!chosenCase) return json(res, 404, { ok: false, error: 'case_not_found' });
 
     const outcome = await mutateDatabase(db => {
       const user = ensureUser(db, identity);
       const prior = user.inventory.find(i => i.requestId === requestId);
       if (prior) {
+        if (prior.spent) return {status:409,body:{ok:false,error:"gift_used",message:"Подарок уже использован."}};
         if (prior.caseId !== caseId) return { status: 409, body: { ok: false, error: 'request_id_conflict' } };
         return { status: 200, body: { ok: true, item: prior, balances: user.balances, totalOpens: Object.values(user.openCounts).reduce((a,b) => a + b, 0) } };
       }
+      if (market.version !== body.version || !chosenCase.totalWeight) return {status:409,body:{ok:false,error:'quote_changed',message:'Цены изменились. Проверь цену открытия.'}};
       const previousOpens = Number(user.openCounts[caseId] || 0);
       if (user.balances.stars < chosenCase.price) return { status: 409, body: { ok: false, error: 'insufficient_balance', message: 'Недостаточно внутренних Stars.' } };
       user.balances.stars -= chosenCase.price;
@@ -481,6 +500,7 @@ const server = http.createServer(async (req, res) => {
     if (!info.isFile()) throw new Error('Not a file');
     const data = await readFile(file);
     res.writeHead(200, {
+      ...(file.endsWith('.tgs') ? {'content-encoding':'gzip'} : {}),
       'content-type': MIME[path.extname(file).toLowerCase()] || 'application/octet-stream',
       'x-content-type-options': 'nosniff',
       'cache-control': 'no-cache',

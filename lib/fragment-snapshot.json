@@ -1,0 +1,77 @@
+{
+  "date": "2026-11-18",
+  "unit": "GRAM",
+  "source": "fragment.com",
+  "rate": {
+    "usd": 1.0091,
+    "eur": 0.9192
+  },
+  "floors": {
+    "eternalrose": {
+      "floor_gram": 35.0
+    },
+    "plushpepe": {
+      "floor_gram": 7500.0
+    },
+    "durovscap": {
+      "floor_gram": 470.0
+    },
+    "diamondring": {
+      "floor_gram": 40.0
+    },
+    "toybear": {
+      "floor_gram": 43.0
+    },
+    "heartlocket": {
+      "floor_gram": 1700.0
+    },
+    "hangingstar": {
+      "floor_gram": 11.0
+    },
+    "bunnymuffin": {
+      "floor_gram": 10.0
+    },
+    "inputkey": {
+      "floor_gram": 8.0
+    },
+    "preciouspeach": {
+      "floor_gram": 319.0
+    },
+    "berrybox": {
+      "floor_gram": 11.0
+    },
+    "jellybunny": {
+      "floor_gram": 11.0
+    },
+    "lunarsnake": {
+      "floor_gram": 5.0
+    },
+    "astralshard": {
+      "floor_gram": 155.0
+    },
+    "cookieheart": {
+      "floor_gram": 6.0
+    },
+    "stellarrocket": {
+      "floor_gram": 6.0
+    },
+    "easteregg": {
+      "floor_gram": 6.0
+    },
+    "minioscar": {
+      "floor_gram": 120.0
+    },
+    "lootbag": {
+      "floor_gram": 160.0
+    },
+    "crystalball": {
+      "floor_gram": 16.0
+    },
+    "candycane": {
+      "floor_gram": 6.0
+    },
+    "moonpendant": {
+      "floor_gram": 8.0
+    }
+  }
+}

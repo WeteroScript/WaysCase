@@ -1,8 +1,10 @@
+import { cases as CASES, draw } from './lib/catalog.mjs';
+import { roundView, startRound, cashOut } from './lib/rocket.mjs';
 import http from 'node:http';
 import { readFile, stat, mkdir, writeFile, rename } from 'node:fs/promises';
 import path from 'node:path';
 import { fileURLToPath } from 'node:url';
-import { createHmac, timingSafeEqual, randomUUID, randomInt } from 'node:crypto';
+import { createHmac, timingSafeEqual, randomUUID } from 'node:crypto';
 
 const APP_DIR = path.dirname(fileURLToPath(import.meta.url));
 const PUBLIC_DIR = path.join(APP_DIR, 'public');
@@ -23,8 +25,6 @@ function resolveWebAppUrl() {
   }
 }
 const WEBAPP_URL = resolveWebAppUrl();
-const GIFT_API = 'https://api.changes.tg';
-
 const MIME = {
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
@@ -37,36 +37,6 @@ const MIME = {
   '.ico': 'image/x-icon',
 };
 
-const GIFTS = [
-  { id: 'eternal-rose', name: 'Eternal Rose', emoji: '🌹' },
-  { id: 'plush-pepe', name: 'Plush Pepe', emoji: '🐸' },
-  { id: 'durovs-cap', name: 'Durov’s Cap', emoji: '🧢' },
-  { id: 'diamond-ring', name: 'Diamond Ring', emoji: '💍' },
-  { id: 'toy-bear', name: 'Toy Bear', emoji: '🧸' },
-  { id: 'heart-locket', name: 'Heart Locket', emoji: '💝' },
-  { id: 'golden-star', name: 'Golden Star', emoji: '🌟' },
-  { id: 'bunny-muffin', name: 'Bunny Muffin', emoji: '🐰' },
-  { id: 'magic-key', name: 'Magic Key', emoji: '🗝️' },
-  { id: 'precious-peach', name: 'Precious Peach', emoji: '🍑' },
-];
-
-const CASES = [
-  { id: 'first-light', title: 'Бомж', subtitle: 'Базовый дроп без лишнего пафоса', cover: 'eternal-rose', gifts: ['eternal-rose', 'plush-pepe', 'bunny-muffin'] },
-  { id: 'emerald-room', title: 'На чиле', subtitle: 'Спокойный коллекционный дроп', cover: 'plush-pepe', gifts: ['plush-pepe', 'toy-bear', 'magic-key', 'precious-peach'] },
-  { id: 'royal-objects', title: 'Мажор', subtitle: 'Премиальная подборка Telegram Gifts', cover: 'durovs-cap', gifts: ['durovs-cap', 'diamond-ring', 'golden-star', 'eternal-rose', 'heart-locket'] },
-  { id: 'love-letter', title: 'Симп', subtitle: 'Коллекция для романтичного вайба', cover: 'heart-locket', gifts: ['heart-locket', 'precious-peach', 'bunny-muffin', 'golden-star'] },
-  { id: 'night-sky', title: 'Ночной флекс', subtitle: 'Неоновые и редкие модели', cover: 'golden-star', gifts: ['golden-star', 'magic-key', 'diamond-ring', 'durovs-cap', 'toy-bear', 'eternal-rose'] },
-  { id: 'toy-world', title: 'Имба', subtitle: 'Яркие модели и необычные подарки', cover: 'toy-bear', gifts: ['toy-bear', 'bunny-muffin', 'plush-pepe', 'precious-peach'] },
-  { id: 'ice-crown', title: 'Лакшери', subtitle: 'Холодный премиум-вайб', cover: 'diamond-ring', gifts: ['diamond-ring', 'durovs-cap', 'golden-star', 'magic-key', 'eternal-rose', 'heart-locket', 'bunny-muffin'] },
-  { id: 'neon-wave', title: 'Гигачад', subtitle: 'Неоновая подборка для флекса', cover: 'magic-key', gifts: ['magic-key', 'precious-peach', 'plush-pepe'] },
-  { id: 'peach-club', title: 'На стиле', subtitle: 'Стильные коллекционные модели', cover: 'precious-peach', gifts: ['precious-peach', 'heart-locket', 'toy-bear', 'bunny-muffin', 'durovs-cap'] },
-  { id: 'grand-archive', title: 'Топ-1', subtitle: 'Подборка заметных моделей', cover: 'golden-star', gifts: ['golden-star', 'diamond-ring', 'eternal-rose', 'magic-key', 'plush-pepe', 'bunny-muffin', 'heart-locket'] },
-];
-
-const giftById = new Map(GIFTS.map(gift => [gift.id, gift]));
-const modelCache = new Map();
-const modelImageCache = new Map();
-const giftApiKeys = new Map();
 const telegramStatus = {
   state: BOT_TOKEN ? 'starting' : 'missing_token',
   enabled: Boolean(BOT_TOKEN),
@@ -92,16 +62,6 @@ function json(res, status, payload) {
   res.end(JSON.stringify(payload));
 }
 
-function todayUtc() {
-  return new Date().toISOString().slice(0, 10);
-}
-
-function nextUtcDay() {
-  const date = new Date();
-  date.setUTCHours(24, 0, 0, 0);
-  return date.toISOString();
-}
-
 async function loadDatabase() {
   await mkdir(DATA_DIR, { recursive: true });
   try {
@@ -124,9 +84,9 @@ async function loadDatabase() {
   log('info', 'Persistent collection database ready', 'file=' + DB_FILE + ' users=' + Object.keys(database.users).length);
 }
 
-async function persistDatabase() {
+async function persistDatabase(snapshot = database) {
   const tempFile = DB_FILE + '.tmp';
-  await writeFile(tempFile, JSON.stringify(database), { encoding: 'utf8', mode: 0o600 });
+  await writeFile(tempFile, JSON.stringify(snapshot), { encoding: 'utf8', mode: 0o600 });
   await rename(tempFile, DB_FILE);
 }
 
@@ -136,8 +96,10 @@ async function mutateDatabase(mutator) {
   writeQueue = new Promise(resolve => { release = resolve; });
   await previous;
   try {
-    const result = await mutator(database);
-    await persistDatabase();
+    const snapshot = structuredClone(database);
+    const result = await mutator(snapshot);
+    await persistDatabase(snapshot);
+    database = snapshot;
     return result;
   } finally {
     release();
@@ -279,84 +241,6 @@ async function readJsonBody(req) {
   }
 }
 
-async function getGiftModels(gift) {
-  const cached = modelCache.get(gift.id);
-  if (cached && cached.expiresAt > Date.now()) return cached.models;
-
-  const compactName = gift.name.normalize('NFKD').replace(/[^a-zA-Z0-9]/g, '');
-  const candidates = Array.from(new Set([gift.id, gift.name, compactName, compactName.toLowerCase()]));
-  let lastError = null;
-
-  for (const apiGiftKey of candidates) {
-    try {
-      const response = await fetch(GIFT_API + '/models/' + encodeURIComponent(apiGiftKey) + '?sorted', {
-        headers: { 'accept': 'application/json', 'user-agent': 'WaysCase/1.0 (Gift Changes attribution)' },
-        signal: AbortSignal.timeout(12000),
-      });
-      if (!response.ok) {
-        lastError = new Error('Gift model source returned HTTP ' + response.status + ' for ' + apiGiftKey);
-        if (response.status === 404) continue;
-        break;
-      }
-      const payload = await response.json();
-      const rows = Array.isArray(payload) ? payload : (Array.isArray(payload.models) ? payload.models : []);
-      const models = rows
-        .filter(row => row && (row.name || row.telegramName))
-        .map(row => {
-          const modelName = String(row.name || row.telegramName);
-          return {
-            name: modelName,
-            telegramName: String(row.telegramName || modelName),
-            rarity: String(row.rarityTier || row.rarity || 'Collectible'),
-            rarityPermille: Number(row.rarityPermille || 0),
-            crafted: Boolean(row.crafted),
-            documentId: row.documentId ? String(row.documentId) : null,
-            imageUrl: '/api/model.svg?gift=' + encodeURIComponent(gift.id) + '&model=' + encodeURIComponent(modelName),
-          };
-        });
-      if (!models.length) {
-        lastError = new Error('No model variants were returned for ' + apiGiftKey);
-        continue;
-      }
-      giftApiKeys.set(gift.id, apiGiftKey);
-      modelCache.set(gift.id, { models, expiresAt: Date.now() + 60 * 60 * 1000 });
-      return models;
-    } catch (error) {
-      lastError = error;
-    }
-  }
-
-  log('warn', 'Telegram gift model catalogue unavailable', 'gift=' + gift.id + ' reason=' + (lastError?.message || 'empty result'));
-  modelCache.set(gift.id, { models: [], expiresAt: Date.now() + 2 * 60 * 1000 });
-  return [];
-}
-
-async function buildCatalogue() {
-  const modelLists = await Promise.all(GIFTS.map(async gift => [gift.id, await getGiftModels(gift)]));
-  const byGift = Object.fromEntries(modelLists);
-  return {
-    modelSource: 'Gift Changes — independent Telegram collectible model catalogue',
-    attribution: 'Gift model data and preview rendering provided by Gift Changes.',
-    modelCount: Object.values(byGift).reduce((sum, list) => sum + list.length, 0),
-    cases: CASES.map((item, index) => ({
-      id: item.id,
-      number: index + 1,
-      title: item.title,
-      subtitle: item.subtitle,
-      gifts: item.gifts.map(giftId => {
-        const gift = giftById.get(giftId);
-        // One fixed model variant is assigned to each gift type in the case catalogue.
-        return { ...gift, models: (byGift[giftId] || []).slice(0, 1) };
-      }),
-      cover: (() => {
-        const gift = giftById.get(item.cover);
-        const models = byGift[item.cover] || [];
-        return { ...gift, models, imageUrl: models[0]?.imageUrl || null };
-      })(),
-    })),
-  };
-}
-
 async function telegramApi(method, payload = {}, timeoutMs = 15000) {
   const response = await fetch('https://api.telegram.org/bot' + BOT_TOKEN + '/' + method, {
     method: 'POST',
@@ -465,31 +349,8 @@ async function handleApi(req, res, url) {
     });
   }
 
-  if (req.method === 'GET' && url.pathname === '/api/model.svg') {
-    const giftId = String(url.searchParams.get('gift') || '');
-    const modelName = String(url.searchParams.get('model') || '');
-    const gift = giftById.get(giftId);
-    if (!gift || !modelName || modelName.length > 100) return json(res, 404, { ok: false, error: 'model_not_found' });
-    const cacheKey = giftId + ':' + modelName;
-    const cachedImage = modelImageCache.get(cacheKey);
-    if (cachedImage && cachedImage.expiresAt > Date.now()) {
-      res.writeHead(200, { 'content-type': 'image/svg+xml; charset=utf-8', 'cache-control': 'public, max-age=3600', 'x-content-type-options': 'nosniff' });
-      return res.end(cachedImage.svg);
-    }
-    const upstream = await fetch(GIFT_API + '/model/' + encodeURIComponent(giftApiKeys.get(giftId) || gift.id) + '/' + encodeURIComponent(modelName) + '.svg', {
-      headers: { 'accept': 'image/svg+xml', 'user-agent': 'WaysCase/1.0 (Gift Changes attribution)' },
-      signal: AbortSignal.timeout(12000),
-    });
-    if (!upstream.ok) return json(res, 502, { ok: false, error: 'model_source_unavailable' });
-    const svg = await upstream.text();
-    if (!/<svg(?:\s|>)/i.test(svg) || svg.length > 1500000) return json(res, 502, { ok: false, error: 'invalid_model_asset' });
-    modelImageCache.set(cacheKey, { svg, expiresAt: Date.now() + 60 * 60 * 1000 });
-    res.writeHead(200, { 'content-type': 'image/svg+xml; charset=utf-8', 'cache-control': 'public, max-age=3600', 'x-content-type-options': 'nosniff' });
-    return res.end(svg);
-  }
-
   if (req.method === 'GET' && url.pathname === '/api/catalog') {
-    const catalogue = await buildCatalogue();
+    const catalogue = { cases: CASES };
     return json(res, 200, { ok: true, ...catalogue });
   }
 
@@ -520,37 +381,46 @@ async function handleApi(req, res, url) {
     return json(res, outcome.status, outcome.body);
   }
 
+  if ((req.method === 'GET' && url.pathname === '/api/rocket') ||
+      (req.method === 'POST' && ['/api/rocket/start','/api/rocket/cashout'].includes(url.pathname))) {
+    const identity = authFromRequest(req);
+    const view = (user, now) => ({ ok: true, round: roundView(user, now), now, balances: user.balances });
+    if (req.method === 'GET') return json(res, 200, view(database.users[identity.id] || {}, Date.now()));
+    const body = await readJsonBody(req);
+    const result = await mutateDatabase(db => {
+      const user = ensureUser(db, identity);
+      const now = Date.now();
+      (url.pathname.endsWith('/start') ? startRound : cashOut)(user, body, now);
+      return view(user, now);
+    });
+    return json(res, 200, result);
+  }
+
   if (req.method === 'POST' && url.pathname === '/api/open') {
     const identity = authFromRequest(req);
     const body = await readJsonBody(req);
-    const caseId = String(body.caseId || '');
+    const caseId = String(body?.caseId || '');
+    const requestId = body?.requestId;
+    if (typeof requestId !== 'string' || !/^[a-f0-9-]{36}$/i.test(requestId)) return json(res, 400, {ok:false, error:'invalid_request_id'});
     const chosenCase = CASES.find(item => item.id === caseId);
     if (!chosenCase) return json(res, 404, { ok: false, error: 'case_not_found' });
 
-    const modelLists = Object.fromEntries(await Promise.all(chosenCase.gifts.map(async giftId => {
-      const gift = giftById.get(giftId);
-      return [giftId, await getGiftModels(gift)];
-    })));
     const outcome = await mutateDatabase(db => {
       const user = ensureUser(db, identity);
-      const previousOpens = Number(user.openCounts[caseId] || 0);
-      const availableGifts = chosenCase.gifts
-        .map(giftId => ({ gift: giftById.get(giftId), models: modelLists[giftId] || [] }));
-      if (availableGifts.some(entry => entry.models.length === 0)) {
-        return {
-          status: 503,
-          body: { ok: false, error: 'model_unavailable', message: 'Не все модели коллекции доступны. Попробуй позже.' },
-        };
+      const prior = user.inventory.find(i => i.requestId === requestId);
+      if (prior) {
+        if (prior.caseId !== caseId) return { status: 409, body: { ok: false, error: 'request_id_conflict' } };
+        return { status: 200, body: { ok: true, item: prior, balances: user.balances, totalOpens: Object.values(user.openCounts).reduce((a,b) => a + b, 0) } };
       }
-      // Unlimited free cosmetic draw: no balance changes; each gift has equal selection odds.
-      const selectedEntry = availableGifts[Math.floor(Math.random() * availableGifts.length)];
-      const gift = selectedEntry.gift;
-      const model = selectedEntry.models[0];
+      const previousOpens = Number(user.openCounts[caseId] || 0);
+      if (user.balances.stars < chosenCase.price) return { status: 409, body: { ok: false, error: 'insufficient_balance', message: 'Недостаточно внутренних Stars.' } };
+      user.balances.stars -= chosenCase.price;
+      const gift = draw(chosenCase);
+      const model = gift.models[0];
       const item = {
-        id: randomUUID(),
+        id: randomUUID(), requestId,
         giftId: gift.id,
         giftName: gift.name,
-        giftEmoji: gift.emoji,
         modelName: model?.name || null,
         rarity: model?.rarity || null,
         modelImageUrl: model?.imageUrl || null,
@@ -567,7 +437,7 @@ async function handleApi(req, res, url) {
           item,
           balances: user.balances,
           totalOpens: Object.values(user.openCounts).reduce((sum, count) => sum + Number(count || 0), 0),
-          odds: { giftTypePercent: Number((100 / availableGifts.length).toFixed(2)), giftTypes: availableGifts.length, modelVariantSelection: 'one fixed model per gift' },
+          chance: gift.chance,
         },
       };
     });
@@ -637,7 +507,7 @@ function requestUrlForError(req) {
 }
 
 server.listen(PORT, '0.0.0.0', () => {
-  log('info', 'WaysCase server listening', 'port=' + PORT);
+  log('info', 'WaysCase server listening', 'port=' + server.address().port);
   databaseReady = loadDatabase()
     .then(() => {
       void runTelegramPolling();

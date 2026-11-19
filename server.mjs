@@ -1,3 +1,4 @@
+import { presentGift } from './lib/gift-art.mjs';
 import { getMarket } from './lib/market.mjs';
 import { trade } from './lib/trades.mjs';
 import { buildCases, gifts, draw } from './lib/catalog.mjs';
@@ -215,7 +216,7 @@ function userSummary(user) {
     firstName: user.firstName,
     username: user.username,
     balances: user.balances,
-    inventory: user.inventory.filter(i => !i.spent).reverse(),
+    inventory: user.inventory.filter(i => !i.spent).reverse().map(presentGift),
     openCounts: user.openCounts,
     lastOpenDates: user.lastOpenDates,
     starterStarsClaimed: Boolean(user.starterStarsClaimed),
@@ -428,7 +429,7 @@ async function handleApi(req, res, url) {
       if (prior) {
         if (prior.spent) return {status:409,body:{ok:false,error:"gift_used",message:"Подарок уже использован."}};
         if (prior.caseId !== caseId) return { status: 409, body: { ok: false, error: 'request_id_conflict' } };
-        return { status: 200, body: { ok: true, item: prior, balances: user.balances, totalOpens: Object.values(user.openCounts).reduce((a,b) => a + b, 0) } };
+        return { status: 200, body: { ok: true, item: presentGift(prior), balances: user.balances, totalOpens: Object.values(user.openCounts).reduce((a,b) => a + b, 0) } };
       }
       if (market.version !== body.version || !chosenCase.totalWeight) return {status:409,body:{ok:false,error:'quote_changed',message:'Цены изменились. Проверь цену открытия.'}};
       const previousOpens = Number(user.openCounts[caseId] || 0);
@@ -453,7 +454,7 @@ async function handleApi(req, res, url) {
         status: 200,
         body: {
           ok: true,
-          item,
+          item: presentGift(item),
           balances: user.balances,
           totalOpens: Object.values(user.openCounts).reduce((sum, count) => sum + Number(count || 0), 0),
           chance: gift.chance,

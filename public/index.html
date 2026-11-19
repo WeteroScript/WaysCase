@@ -365,7 +365,7 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
     const root = $('caseGrid');
     if (!state.catalogue) return;
     root.innerHTML = state.catalogue.cases.map(c => {
-      return '<article class="case-card"><div class="case-art">' + giftImage(c.cover) + '</div><div class="case-body">' +
+      return '<article class="case-card"><div class="case-art series-art"><img src="' + esc(c.coverImageUrl) + '" alt=""></div><div class="case-body">' +
         '<div class="case-meta"><span>КЕЙС ' + String(c.number).padStart(2,'0') + '</span><span>' + c.gifts.length + ' подарков</span></div><h3>' + esc(c.title) + '</h3>' +
         '<div class="case-card-actions"><button class="primary" data-open-case="' + esc(c.id) + '">За ' + c.price + ' ★</button>' +
         '<button class="case-info" data-info-case="' + esc(c.id) + '" aria-label="Содержимое кейса" title="Содержимое кейса"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 10.7v5.1M12 7.6h.01" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button></div></div></article>';
@@ -381,7 +381,7 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
     }
     root.innerHTML = '<div class="inventory-grid">' + items.map(item => {
       const gift = giftForId(item.giftId) || { emoji:item.giftEmoji || '✦', name:item.giftName, models:[] };
-      const model = item.modelImageUrl?.startsWith('/assets/gifts/') ? {imageUrl:item.modelImageUrl} : null;
+      const model = item.modelImageUrl ? {imageUrl:item.modelImageUrl} : null;
       const date = new Date(item.receivedAt).toLocaleDateString('ru-RU');
       return '<article class="inventory-item"><div class="inventory-image">' + giftImage(gift, model) + '</div><h3>' + esc(item.modelName || item.giftName) + '</h3><p>' + esc(item.caseName) + ' · ' + esc(date) + '</p><button class="secondary" data-view-item="' + esc(item.id) + '">Посмотреть</button></article>';
     }).join('') + '</div>';

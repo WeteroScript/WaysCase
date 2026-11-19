@@ -13,7 +13,7 @@ function mountExchange({state, api, $, esc, giftForId, renderAll}) {
   function tile(g, options = {}) {
     const tag = options.key ? 'button' : 'article';
     const attrs = options.key ? ` type="button" data-key="${esc(options.key)}"` : '';
-    return `<${tag} class="market-card"${attrs}>${!options.key ? price(g.id) : ''}<img class="art" loading="lazy" src="${esc(options.art || artwork(g))}" alt=""><strong>${esc(g.name)}</strong><small>${esc(options.model || g.models[0].name)}</small>${options.key ? price(g.id) : ''}${options.odds == null ? '' : `<small class="chance">Шанс ${percent(options.odds)}</small>`}</${tag}>`;
+    return `<${tag} class="market-card"${attrs}>${!options.key ? price(g.id) : ''}<img class="art" ${options.key ? '' : 'loading="lazy"'} src="${esc(options.art || artwork(g))}" alt=""><strong>${esc(g.name)}</strong><small>${esc(options.model || g.models[0].name)}</small>${options.key ? price(g.id) : ''}${options.odds == null ? '' : `<small class="chance">Шанс ${percent(options.odds)}</small>`}</${tag}>`;
   }
   const percent = threshold => number.format(threshold/10000)+' %';
   const chance = (src,dest) => Math.floor(quote(src).ton / quote(dest).ton * 1000000);
@@ -111,16 +111,17 @@ function mountExchange({state, api, $, esc, giftForId, renderAll}) {
   function reward(item,newlyWon) {
     prize=item; const g=giftForId(item.giftId);
     $('rewardHeading').textContent=newlyWon?'Вы выиграли':'Ваш подарок';
-    $('rewardName').textContent=item.giftName; $('rewardModel').textContent=item.modelName || '';
+    $('rewardName').textContent=item.giftName; $('rewardModel').textContent=[item.modelName, item.collectionPreview && 'Превью коллекции'].filter(Boolean).join(' · ');
     $('rewardStatus').textContent=tradable()?'Продажа за внутренние Stars.':'Нет свежих цен для продажи.';
     $('keepGift').textContent=newlyWon?'Забрать':'Закрыть'; $('sellGift').hidden=false;
     const poster=$('rewardPoster');
-    const image = item.modelImageUrl?.startsWith('/assets/gifts/') ? item.modelImageUrl : g && artwork(g);
+    const image = item.modelImageUrl || (g && artwork(g));
     poster.hidden=!image;
     if (image) poster.src=image; else poster.removeAttribute('src'); poster.alt=item.giftName;
     sellButton(); sheet.showModal();
-    if (item.modelName === g?.models[0].name && window.lottie && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      animation=lottie.loadAnimation({container:$('rewardMotion'),renderer:'svg',loop:true,autoplay:true,path:`/assets/animations/${g.id}.tgs`});
+    $('rewardMotion').classList.toggle('upright-snake',item.animationUrl === '/assets/animations/lunar-snake.tgs');
+    if (item.animationUrl && window.lottie && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
+      animation=lottie.loadAnimation({container:$('rewardMotion'),renderer:'svg',loop:true,autoplay:true,path:item.animationUrl});
       animation.addEventListener('DOMLoaded',()=>{if(prize===item) poster.hidden=true;});
     }
   }

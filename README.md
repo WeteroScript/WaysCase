@@ -1,49 +1,25 @@
 # WaysCase
 
-Telegram Mini App for exploring collectible Telegram Gift model variants.
+Telegram Mini App with ten gift cases and a personal rocket game. Balances and inventory are internal game records; there are no purchases, transfers or withdrawals.
 
-## Current application
+## Cases
 
-- Telegram bot /start opens the Mini App.
-- Telegram initData is verified on the server before a personal profile, inventory, and balances are returned.
-- Ten collections use model metadata and SVG previews from the independent Gift Changes catalogue.
-- Each collection has a horizontal roulette-style reveal animation.
-- Each collection has a free random gift draw once per UTC day. Gift types in that case have equal odds; model variants within the selected gift type are selected uniformly.
-- The available collection contents and odds are shown before opening.
-- Each free opening adds 10 internal Stars points and 1 internal TON point. The point balances are not spent on openings.
-- The profile has a one-time claim for 10,000 internal Stars points. The claim is stored server-side and cannot be repeated for the same Telegram account.
-- Gift entries, balances, and progress are saved to the persistent JSON store under /data.
+Cases use daily **collection floors on Fragment**, not Telegram issue prices or appraisals of individual serial numbers/models. The Gifts tab shows all 22 playable gifts. The i-panel and roulette show the same dated quotes. A gift has `max(1, round(1000000 / floorTON))` tickets; an unpriced gift has zero tickets. Opening costs the weighted mean sell value in internal Stars, rounded up. The client confirms the quote version so a changed case price cannot be charged silently.
 
-## Important distinction
+### Prices and settlement
 
-Stars and TON shown by WaysCase are internal non-transferable progression points. They are not Telegram Stars or Toncoin, cannot be purchased, transferred, withdrawn, exchanged, or sold.
+Source: [Telegram gifts floor prices, Baltic Assets](https://balticassets.eu/en/crypto/telegram-gifts/) ([dataset](https://github.com/Atlannn/telegram-gifts-floor-price), CC BY 4.0). `lib/market.mjs` reads their daily Fragment feed via GitHub, refreshing at most hourly (5-minute retry on error). The included `lib/fragment-snapshot.json` is a subset of the 2026-11-18 dataset for offline startup. `floor_gram` is the lowest listed price including auctions, in the coin labelled TON in the app, **not** a guaranteed buy-now offer. Internal Stars are an estimate: `floor(floorTON × daily USD rate / 0.013)`. There is no exchange, marketplace purchase or external NFT transfer. A failed refresh keeps the last dated snapshot in memory. Missing listings are unpriced; quotes older than 72 hours cannot be traded.
 
-The random draw is free. There are no deposits, wagers, paid random rewards, or cash-outs. Gift records in the WaysCase inventory are collection records for the Mini App; they do not mint, transfer, or prove ownership of an NFT in Telegram or on the TON blockchain. The app does not offer gift sale or exchange for value.
+The reveal automatically keeps the gift if dismissed. Keep or sell it immediately, or reopen it in Inventory. Sale credits internal Stars only. Upgrades consume one owned item and require a strictly higher floor; the server samples a uniform ticket in `[0, 1000000)` and wins below `floor(sourceTON / targetTON × 1000000)`. The ring animates to this ticket. Trades verify ownership and quote version and commit as one database mutation. Spent rows are hidden but retained as receipts, so retries cannot sell twice, resurrect a draw or reroll an upgrade.
 
-Gift model data and SVG previews are supplied by the independent Gift Changes project (https://t.me/GiftChangesAPI). Gift Changes is not Telegram. The upstream catalogue must be reachable for live model variants and previews.
+WebP previews: [sendboc/Gifts-Assets](https://github.com/sendboc/Gifts-Assets/tree/b17b2072f0d760b29aba2ce5b6ad502e0a4ac44b). Original model TGS animations and the matching Compass / Honey Gold posters: [TelegramGiftsAssests](https://github.com/ssamy2/TelegramGiftsAssests/tree/1eb0666fff81b63f9002004084ff0ee3a9eed10f/models). The local Lottie Web SVG light player v5.13.0 (MIT, `public/vendor/lottie-LICENSE.md`) plays them without an external CDN; reduced-motion mode uses the poster.
 
-## Environment
+## Rocket
 
-- BOT_TOKEN: Telegram bot token already configured in Bothost.
-- TELEGRAM_BOT_TOKEN: accepted as an alternative variable name.
-- WEBAPP_URL: public HTTPS address of this Mini App.
-- PORT: HTTP port (default 3000).
-- DATA_DIR: persistent application data directory (default /data in Docker).
+Claim the one-time starter balance in Profile (10,000 Stars and 500 TON points). Stake whole internal Stars, then collect before the crash. Payout includes the stake, rounded down to whole Stars. Only the server chooses the crash time and calculates the multiplier. The last round is persisted, including when the Mini App is closed. TON points are not spent.
 
-Do not commit tokens or .env files.
+## Run
 
-## Bothost deployment
+Use Node 20+, `node --test`, then `BOT_TOKEN=… WEBAPP_URL=https://… DATA_DIR=./data node server.mjs`. Open the Mini App via the bot; personal routes verify Telegram initData. The default port is 3000. Docker includes the bot and server in one process. Mount persistent storage at `/data`; run a single server process per database. Do not commit tokens or state files.
 
-Build the included Dockerfile and expose port 3000. The image declares /data as a volume so WaysCase can store its database outside the application filesystem. If Bothost offers persistent volumes, mount one at /data; without persistent storage provided by the host, data may be lost when the container is replaced.
-
-The bot and web application run in the same Node process. The app starts Telegram long polling after the database is ready. Logs include startup state, Telegram authorization, webhook state, polling errors, incoming commands, and successful /start replies.
-
-- GET /health reports application and bot status.
-- GET /api/catalog returns collection and model metadata.
-- GET /api/me returns the verified Telegram user's balances, inventory, and progress.
-- POST /api/claim-starter-stars grants 10,000 internal Stars once per Telegram account.
-- POST /api/open records one free random gift draw for a collection per UTC day.
-
-## Local validation
-
-Run node --check server.mjs and start the app with BOT_TOKEN, WEBAPP_URL, and DATA_DIR configured. Open the Mini App from the Telegram bot so that Telegram supplies signed initData.
+`GET /health`, `GET /api/catalog` are public. Authenticated routes: `GET /api/me`, `POST /api/claim-starter-stars`, `POST /api/open` (`caseId`, UUID `requestId`, market `version`), `POST /api/sell` (`itemId`, `version`), `POST /api/upgrade` (`itemId`, `targetId`, `version`), `GET /api/rocket`, `POST /api/rocket/start` (`stake`, new UUID `id`, last round ID `previous` or null), `POST /api/rocket/cashout` (`id`). Replaying an opening request or the current round's start/cashout does not charge or credit twice.

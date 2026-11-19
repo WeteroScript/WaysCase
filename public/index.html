@@ -126,26 +126,6 @@ button{font:inherit}
 @media(max-width:700px){.app{padding:14px 14px 38px}.hero{padding:32px 0 19px;display:block}.hero-note{display:none}.case-grid{grid-template-columns:repeat(2,minmax(0,1fr));gap:10px}.case-art{height:145px;padding:20px}.case-body{padding:12px}.case-body h3{font-size:15px}.case-meta{font-size:8px}.case-body p{font-size:10px}.case-preview{gap:3px;margin:11px 0}.mini-model{width:25px;height:25px}.case-body .primary{padding:10px 8px;font-size:10px}.balance{min-width:80px;padding:7px 9px}.balance strong{font-size:13px}.brand{font-size:14px}.two-col{grid-template-columns:1fr 1fr}.nav button{padding:9px 11px;font-size:11px}}
 @media(max-width:380px){.case-grid{grid-template-columns:1fr}.case-art{height:175px}.balances{gap:5px}.balance{min-width:70px}.balance span{font-size:8px}}
 
-.rocket-stage{height:180px;position:relative;overflow:hidden;border:1px solid #28563a;border-radius:14px;background:radial-gradient(ellipse at 20% 20%,#173d25,#07110a 70%);margin-bottom:14px}
-.rocket-stars{position:absolute;inset:15px;color:#8be9a6;font-size:14px;letter-spacing:6px;opacity:.7}
-.rocket-ship{position:absolute;left:7%;top:68%;z-index:2;font-size:40px;filter:drop-shadow(0 8px 12px #0009);transform:rotate(-25deg)}
-.rocket-horizon{position:absolute;left:-10%;right:-10%;bottom:-90px;height:130px;border-radius:50%;background:radial-gradient(ellipse at center,#24633a,#0b1b10 70%)}
-.rocket-stage.running .rocket-ship{transition:none}
-.rocket-stage.complete .rocket-ship{transform:rotate(-20deg)}
-.rocket-stats{display:grid;grid-template-columns:repeat(3,minmax(0,1fr));gap:8px;margin-bottom:10px}
-.rocket-readout{flex-direction:column;align-items:flex-start;justify-content:center;gap:5px;margin-bottom:0;min-width:0}
-.rocket-readout span{font-size:10px}
-.rocket-readout strong{font-size:16px}
- .rocket-explosion{display:none;position:absolute;left:50%;top:38%;z-index:4;place-items:center;width:76px;height:76px;margin:-38px 0 0 -38px;border-radius:50%;background:radial-gradient(circle,#fff6ad 0,#ff9f36 28%,#ed4b28 55%,transparent 72%);color:#fff4d5;font-size:66px;line-height:1;text-shadow:0 0 18px #ff6b32;filter:drop-shadow(0 0 18px #ff6b32)}
-.rocket-stage.crashed .rocket-ship{animation:rocket-disintegrate .55s ease-out forwards}
-.rocket-stage.crashed .rocket-explosion{display:grid;animation:rocket-blast .65s ease-out forwards}
-@keyframes rocket-disintegrate{to{transform:translate(10px,-12px) scale(1.35) rotate(110deg);opacity:0;filter:blur(5px)}}
-@keyframes rocket-blast{0%{opacity:0;transform:scale(.2)}35%{opacity:1;transform:scale(1.12)}100%{opacity:.75;transform:scale(.9)}}
-@media(max-width:520px){.rocket-stats{grid-template-columns:1fr}.rocket-readout{flex-direction:row;align-items:center;justify-content:space-between}}
-
-@keyframes rocket-flight{0%{left:7%;top:68%;transform:rotate(-25deg)}35%{left:34%;top:45%;transform:rotate(-18deg)}70%{left:61%;top:28%;transform:rotate(-15deg)}100%{left:84%;top:21%;transform:rotate(-20deg)}}
-.rocket-readout{display:flex;align-items:center;justify-content:space-between;padding:12px 14px;margin-bottom:10px;border:1px solid #28563a;border-radius:11px;background:#0b170f;color:#93b39b;font-size:11px}
-.rocket-readout strong{color:#6aefa0;font-size:17px;font-variant-numeric:tabular-nums}
 .case-price{display:flex;justify-content:space-between;align-items:center;margin:10px 0 8px;padding:9px 10px;border:1px solid #28563a;border-radius:10px;background:#0a170e;color:#94b79d;font-size:10px}
 .case-price strong{color:#6aefa0;font-size:11px}
 .model-group{padding:12px;border:1px solid #23422d;border-radius:13px;background:#09130c}
@@ -222,69 +202,85 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
 .case-art .model-image img{width:100%;height:100%;max-width:138px;max-height:138px;padding:8px;object-fit:contain}
 .case-art .model-image span{font-size:68px}
 
+[hidden]{display:none!important}.nav{margin-top:16px}.case-art{grid-template:minmax(0,1fr)/minmax(0,1fr)}.case-art img{max-height:100%;padding:8px}.mini-model img{padding:3px}.gift-thumb img,.inventory-image img,.result-image img{min-height:0;min-width:0;padding:10%;box-sizing:border-box}.gift-list{max-height:46vh;overflow:auto}.rarity{white-space:nowrap}.notice:empty,.status:empty{display:none}.case-body h3{margin-bottom:16px}
+.flight-panel{max-width:660px;margin:auto;padding:14px}.flight-heading{padding:4px 4px 10px}.flight-heading span{font:700 9px monospace;letter-spacing:2px;color:#7cba9c}.flight-heading h2{margin:4px 0;font-size:24px}#rocketStage{width:100%;display:block;border-radius:16px;background:radial-gradient(ellipse at 10% 100%,#184638,transparent 62%),linear-gradient(145deg,#101e30,#081317);overflow:hidden}.dust{opacity:.7}#rocketStage[data-state=flying] .dust{animation:drift 4s linear infinite}#rocketStage[data-state=flying] .plume{animation:thrust .17s ease-in-out infinite alternate}#trail{filter:drop-shadow(0 0 3px #50ffb3)}#rocketMultiplier{font:bold 11px monospace}.burst{display:none}#rocketStage[data-state=crashed] .vehicle{opacity:0}#rocketStage[data-state=crashed] .burst{display:block;animation:flare .65s ease-out forwards}.stake-field{display:flex;align-items:center;justify-content:space-between;gap:8px;margin:16px 0;color:#a9c1b0;font-size:13px}.stake-field input{width:96px;background:#091610;border:1px solid #315e42;border-radius:9px;padding:10px;color:white;font:inherit}#rocketStart{min-height:44px}@keyframes drift{to{transform:translate(-63px,53px)}}@keyframes thrust{to{transform:scaleX(.77)}}@keyframes flare{from{transform:scale(.2)}to{transform:scale(1.9);opacity:0}}@media(prefers-reduced-motion:reduce){.dust,.plume,.burst{animation:none!important}}
 </style>
+<link rel="stylesheet" href="/exchange.css">
 </head>
 <body>
 <div class="app">
 <header class="topbar">
   <div class="brand"><span class="brand-mark">✦</span><span>WAYSCASE</span></div>
   <div class="balances">
-    <div class="balance"><span>⭐ Internal Stars</span><strong id="starsBalance">—</strong></div>
-    <div class="balance"><span>TON · points</span><strong id="tonBalance">—</strong></div>
+    <div class="balance"><span><img class="currency-icon" src="/assets/currency/star.svg" alt="Stars"> Игровые Stars</span><strong id="starsBalance">—</strong></div>
+    <div class="balance"><span><img class="currency-icon" src="/assets/currency/ton.svg" alt=""> Игровые TON</span><strong id="tonBalance">—</strong></div>
   </div>
 </header>
 
-<section class="hero">
-  <div><div class="eyebrow">COLLECTIBLE GIFT STUDIO</div><h1>Открывай.<br><em>Собирай модели.</em></h1><p>Коллекции реальных Telegram collectible gifts с модельными превью. В каждом кейсе несколько подарков с закреплёнными моделями. При бесплатном открытии выбирается один подарок.</p></div>
-  <div class="hero-note">10 коллекций<br>Бесплатное открытие<br>Постоянный инвентарь</div>
-</section>
-
 <nav class="nav">
   <button class="active" data-tab="cases">Кейсы</button>
+  <button data-tab="gifts">Подарки</button>
+  <button data-tab="upgrade">Апгрейд</button>
   <button data-tab="inventory">Инвентарь</button>
   <button data-tab="profile">Профиль</button>
   <button data-tab="rocket">Ракета</button>
 </nav>
 
 <section class="page" id="page-cases">
-  <div class="section-head"><div><h2>Коллекции</h2><p>Одна бесплатная прокрутка каждого кейса в день</p></div></div>
-  <div id="catalogStatus" class="status">Загружаю каталог подарков и модели…</div>
+  <div class="section-head"><div><h2>Коллекции</h2></div></div>
+  <div id="catalogStatus" class="status">Загружаем каталог…</div>
   <div id="caseGrid" class="case-grid"></div>
 </section>
 
+<section class="page" id="page-gifts" hidden>
+  <div class="market-head"><h2>Подарки</h2><small id="marketDate"></small></div>
+  <p class="floor-note"><span id="marketCaption"></span> <a href="https://balticassets.eu/en/crypto/telegram-gifts/" target="_blank" rel="noopener noreferrer">Baltic Assets</a></p>
+  <div id="marketGrid" class="market-grid"></div>
+</section>
+<section class="page" id="page-upgrade" hidden>
+  <div class="section-head"><h2>Апгрейд</h2></div>
+  <div class="panel upgrade-board">
+    <div class="upgrade-slots">
+      <div class="upgrade-slot"><label for="pickOwn">Выберите свой NFT</label><button id="pickOwn">+</button></div>
+      <div class="wheel" id="chanceWheel"><strong id="chanceLabel">—</strong><i id="wheelPointer" aria-hidden="true"></i></div>
+      <div class="upgrade-slot"><label for="pickTarget">Выберите желаемый NFT</label><button id="pickTarget" disabled>+</button></div>
+    </div>
+    <p class="trade-status" id="upgradeStatus" role="status">При неудаче свой подарок сгорает.</p>
+    <button class="primary full" id="startUpgrade" disabled>Старт</button>
+  </div>
+</section>
 <section class="page" id="page-inventory" hidden>
-  <div class="section-head"><div><h2>Мой инвентарь</h2><p>Записи хранятся на сервере WaysCase</p></div></div>
+  <div class="section-head"><div><h2>Мой инвентарь</h2></div></div>
   <div id="inventoryRoot"></div>
 </section>
 
 <section class="page" id="page-profile" hidden>
-  <div class="section-head"><div><h2>Профиль коллекционера</h2><p>Прогресс и внутренние балансы</p></div></div>
+  <div class="section-head"><div><h2>Профиль</h2></div></div>
   <div id="profileRoot"></div>
 </section>
 
 <section class="page" id="page-rocket" hidden>
-  <div class="section-head"><div><h2>Rocket Run</h2><p>Аркадный полёт: случайный сбой или ручное завершение</p></div></div>
-  <div class="panel">
-    <div class="rocket-stage" id="rocketStage" aria-label="Полёт ракеты">
-      <div class="rocket-stars">✦　·　✧　　　·　✦　　·　✧</div>
-      <div class="rocket-ship" id="rocketShip">🚀</div>
-      <div class="rocket-explosion" id="rocketExplosion" aria-hidden="true">✹</div>
-      <div class="rocket-horizon"></div>
-    </div>
-    <div class="rocket-stats">
-      <div class="rocket-readout"><span>Множитель раунда</span><strong id="rocketMultiplier">1.00x</strong></div>
-      <div class="rocket-readout"><span>Статус</span><strong id="rocketRoundState">Ожидание</strong></div>
-      <div class="rocket-readout"><span>Лучший x</span><strong id="rocketRecord">1.00x</strong></div>
-    </div>
-    <p class="status" id="rocketStatus">Запусти ракету. Полёт можно завершить вручную до случайного сбоя. Очки, баланс и инвентарь не затрагиваются.</p>
-    <button class="primary full" id="rocketStart">Запустить ракету</button>
+  <div class="panel flight-panel">
+    <div class="flight-heading"><span>WAYSCASE / FLIGHT</span><h2>Ракета</h2></div>
+    <svg id="rocketStage" viewBox="0 0 360 235" role="img" aria-label="Траектория полёта и текущий множитель">
+      <defs>
+        <pattern id="dust" width="63" height="53" patternUnits="userSpaceOnUse"><circle cx="13" cy="9" r="1" fill="#bfe7e2"/><circle cx="40" cy="37" r=".65" fill="#b4cae0"/></pattern>
+        <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M28 0H0V28" fill="none" stroke="#88b89e" stroke-opacity=".08"/></pattern>
+        <linearGradient id="hull" x2="0.3" y2="1"><stop stop-color="white"/><stop offset=".52" stop-color="#d6ffe8"/><stop offset="1" stop-color="#54b891"/></linearGradient>
+        <linearGradient id="wake"><stop stop-color="#44ffa2" stop-opacity=".12"/><stop offset="1" stop-color="#8cffe4"/></linearGradient>
+        <radialGradient id="moon"><stop stop-color="#dcf4c7"/><stop offset="1" stop-color="#809c78"/></radialGradient>
+      </defs>
+      <rect width="360" height="235" fill="url(#grid)"/><rect class="dust" y="-53" x="-63" width="486" height="288" fill="url(#dust)"/>
+      <g opacity=".75" transform="translate(282 40) rotate(-18)"><circle r="18" fill="url(#moon)"/><ellipse rx="29" ry="6" fill="none" stroke="#c6dfae" stroke-width="2"/></g>
+      <path id="trail" fill="none" stroke="url(#wake)" stroke-width="3" stroke-linecap="round"/>
+      <g id="ship"><g class="vehicle"><path class="plume" d="M-17 -5 Q-28 -8 -42 0 Q-26 8 -17 5Z" fill="#ffbf60"/><path d="M-13 -7 L-20 -18 Q-5 -18 6 -7 M-13 7 L-20 18 Q-5 18 6 7" fill="#26ca92"/><path d="M-19 -6 Q0 -20 24 0 Q2 17 -19 6Z" fill="url(#hull)"/><circle cx="5" cy="-1" r="5.5" fill="#0e5062" stroke="#74ddb9" stroke-width="2"/><path d="M2 -4q2 -2 4 -1" fill="none" stroke="white"/></g><circle class="burst" r="18" fill="#ffe199"/></g>
+      <g id="flightTag"><rect x="-26" y="-9" width="53" height="20" rx="8" fill="#08271c" stroke="#407b63"/><text id="rocketMultiplier" y="5" text-anchor="middle" fill="#bcffe0">×1.00</text></g>
+    </svg>
+    <label class="stake-field">Ставка · внутренние Stars<input id="rocketStake" type="number" inputmode="numeric" min="1" max="100000" step="1" value="100" required></label>
+    <p class="status" id="rocketStatus" role="status"></p>
+    <button class="primary full" id="rocketStart" disabled>Сделать ставку</button>
   </div>
 </section>
-
-<div class="footer">
-  Внутренние Stars и TON — только игровые очки WaysCase: не являются Telegram Stars или криптовалютой TON, не покупаются, не переводятся и не выводятся. Открытия бесплатные и не ограничены. В каждом кейсе 3–7 подарков; у каждого подарка одна закреплённая модель.<br><br>
-  Модельные превью и данные: <a href="https://t.me/GiftChangesAPI" target="_blank" rel="noopener">Gift Changes</a>, независимый каталог данных Telegram Gifts. WaysCase не является официальным приложением Telegram. Запись в инвентаре не означает владение NFT и не создаёт подарок в Telegram.
-</div>
 </div>
 
 <div class="modal" id="caseModal">
@@ -292,14 +288,12 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
     <div class="modal-head"><div><h2 id="modalTitle">Collection</h2><p id="modalSubtitle"></p></div><button class="close" id="modalClose" aria-label="Закрыть">×</button></div>
     <p class="status" id="modalPreview"></p>
     <div class="gift-list" id="modalGiftList"></div>
-    <div class="order-note" id="orderNote">Бесплатное случайное открытие. Шанс каждого типа подарка одинаковый; модель выбирается равновероятно среди вариантов выбранного типа.</div>
-    <div class="modal-actions"><button class="primary" id="openCaseButton">Открыть бесплатно</button><button class="secondary" id="modalDone">Закрыть</button></div>
+    <div class="modal-actions"><button class="primary" id="openCaseButton">Открыть</button><button class="secondary" id="modalDone">Закрыть</button></div>
     <div class="opening" id="openingStage">
-      <p class="status">Анимированная прокрутка к случайно выбранной модели…</p>
+
       <div class="roulette-window" id="rouletteWindow"><div class="roulette-track" id="rouletteTrack"></div></div>
-      <div class="result" id="openingResult"><div class="result-image" id="resultImage"></div><div><strong id="resultName"></strong><small id="resultMeta"></small></div></div>
     </div>
-    <div class="notice" id="modalNotice">Каждое открытие бесплатное. За него начисляются внутренние очки: +10 Stars и +1 TON point.</div>
+    <div class="notice" id="modalNotice"></div>
   </div>
 </div>
 
@@ -308,13 +302,28 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
   <p id="authMessage">Для сохранения инвентаря и баланса нужна подтверждённая Telegram-сессия. Открой Mini App через кнопку бота.</p>
 </div>
 
+<dialog class="sheet reward" id="rewardSheet" aria-labelledby="rewardHeading">
+  <div class="sheet-head"><h2 id="rewardHeading">Ваш подарок</h2></div>
+  <div class="reward-art"><img id="rewardPoster" alt=""><div class="reward-motion" id="rewardMotion"></div></div>
+  <h3 id="rewardName"></h3><span class="status" id="rewardModel"></span>
+  <div class="reward-actions"><button class="primary" id="keepGift">Забрать</button><button class="secondary" id="sellGift">Продать<span id="sellValue"></span></button></div>
+  <p class="status" id="rewardStatus" role="status"></p>
+</dialog>
+<dialog class="sheet" id="pickSheet" aria-labelledby="pickHeading">
+  <div class="sheet-head"><h2 id="pickHeading"></h2><button class="close" id="closePicker" aria-label="Закрыть">×</button></div>
+  <div class="pick-grid" id="pickGrid"></div>
+</dialog>
+
+<script src="/vendor/lottie-light-5.13.0.min.js"></script>
+<script src="/exchange.js"></script>
+<script src="/flight.js"></script>
 <script>
 (function(){
   const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
   if (tg) { tg.ready(); tg.expand(); }
   const state = { catalogue: null, user: null, activeCase: null, busy: false };
   const $ = id => document.getElementById(id);
-  const today = () => new Date().toISOString().slice(0,10);
+  const openingRequests = new Map();
   const esc = value => String(value == null ? '' : value).replace(/[&<>"']/g, ch => ({'&':'&amp;','<':'&lt;','>':'&gt;','"':'&quot;',"'":'&#39;'}[ch]));
   const headers = () => {
     const h = { 'content-type':'application/json' };
@@ -340,33 +349,12 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
     }
     return null;
   }
-  function imgOrEmoji(gift, model) {
-    const url = model && model.imageUrl ? model.imageUrl : gift && gift.models && gift.models[0] ? gift.models[0].imageUrl : null;
-    if (url) return '<img src="' + esc(url) + '" alt="' + esc(gift.name) + '" data-fallback="' + esc(gift.emoji || '✦') + '" loading="lazy">';
-    return '<span>' + esc(gift.emoji || '✦') + '</span>';
+  function giftImage(gift, model) {
+    const url = model?.imageUrl || gift.models?.[0]?.imageUrl;
+    return url ? '<img src="' + esc(url) + '" alt="' + esc(gift.name) + '">' : '';
   }
-  function wireImageFallback(root) {
-    root.querySelectorAll('img[data-fallback]').forEach(img => {
-      img.addEventListener('error', () => {
-        const fallback = document.createElement('span');
-        fallback.textContent = img.dataset.fallback || '✦';
-        img.replaceWith(fallback);
-      }, { once: true });
-    });
-  }
-
-  function getCount(caseId) {
-    return Number((state.user && state.user.openCounts && state.user.openCounts[caseId]) || 0);
-  }
-  function alreadyOpened(caseId) {
-    return false;
-  }
-  function canOpen(caseId) {
-    const c = state.catalogue && state.catalogue.cases.find(item => item.id === caseId);
-    if (!c || !state.user || state.busy) return false;
-    return c.gifts.every(gift => Array.isArray(gift.models) && gift.models.length > 0);
-  }
-
+  const exchange = mountExchange({state,api,$,esc,giftForId,renderAll});
+  function canOpen(c) { return state.user && c.totalWeight > 0 && !state.busy && state.user.balances.stars >= c.price; }
   function renderBalances() {
     const b = state.user && state.user.balances ? state.user.balances : null;
     $('starsBalance').textContent = b ? Number(b.stars).toLocaleString('ru-RU') : '—';
@@ -377,32 +365,25 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
     const root = $('caseGrid');
     if (!state.catalogue) return;
     root.innerHTML = state.catalogue.cases.map(c => {
-      const gift = c.gifts[0] || c.cover;
-      const model = gift && Array.isArray(gift.models) ? gift.models[0] : null;
-      const art = gift ? imgOrEmoji(gift, model) : '<div class="art-empty">✦</div>';
-      const preview = c.gifts.slice(0, 4).map(g => '<div class="mini-model">' + imgOrEmoji(g, g.models && g.models[0]) + '</div>').join('');
-      return '<article class="case-card"><div class="case-art">' + art + '</div><div class="case-body">' +
-        '<div class="case-meta"><span>CASE ' + String(c.number).padStart(2,'0') + '</span><span class="count">' + c.gifts.length + ' GIFTS · ' + c.gifts.length + ' MODELS</span></div>' +
-        '<div class="case-price"><span>Цена открытия</span><strong>Бесплатно</strong></div>' +
-        '<h3>' + esc(c.title) + '</h3><p>' + esc(c.subtitle) + '</p>' +
-        '<div class="case-preview">' + preview + (c.gifts.length > 4 ? '<small>+' + (c.gifts.length - 4) + ' ещё</small>' : '') + '</div>' +
-        '<div class="case-card-actions"><button class="primary" data-open-case="' + esc(c.id) + '">Открыть</button>' +
+      return '<article class="case-card"><div class="case-art">' + giftImage(c.cover) + '</div><div class="case-body">' +
+        '<div class="case-meta"><span>КЕЙС ' + String(c.number).padStart(2,'0') + '</span><span>' + c.gifts.length + ' подарков</span></div><h3>' + esc(c.title) + '</h3>' +
+        '<div class="case-card-actions"><button class="primary" data-open-case="' + esc(c.id) + '">За ' + c.price + ' ★</button>' +
         '<button class="case-info" data-info-case="' + esc(c.id) + '" aria-label="Содержимое кейса" title="Содержимое кейса"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 10.7v5.1M12 7.6h.01" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button></div></div></article>';
     }).join('');
-    wireImageFallback(root);
+
   }
   function renderInventory() {
     const root = $('inventoryRoot');
     const items = state.user && Array.isArray(state.user.inventory) ? state.user.inventory : [];
     if (!items.length) {
-      root.innerHTML = '<div class="empty"><strong>Пока пусто</strong>Открой бесплатную коллекцию — полученный предмет сохранится здесь.</div>';
+      root.innerHTML = '<div class="empty"><strong>Пока пусто</strong></div>';
       return;
     }
     root.innerHTML = '<div class="inventory-grid">' + items.map(item => {
       const gift = giftForId(item.giftId) || { emoji:item.giftEmoji || '✦', name:item.giftName, models:[] };
-      const model = item.modelImageUrl ? {imageUrl:item.modelImageUrl} : null;
+      const model = item.modelImageUrl?.startsWith('/assets/gifts/') ? {imageUrl:item.modelImageUrl} : null;
       const date = new Date(item.receivedAt).toLocaleDateString('ru-RU');
-      return '<article class="inventory-item"><div class="inventory-image">' + imgOrEmoji(gift, model) + '</div><h3>' + esc(item.modelName || item.giftName) + '</h3><p>' + esc(item.caseName) + ' · ' + esc(date) + '</p><p>' + esc(item.rarity || 'Collectible gift') + '</p><p class="inventory-note">Коллекционная запись · не продаётся</p></article>';
+      return '<article class="inventory-item"><div class="inventory-image">' + giftImage(gift, model) + '</div><h3>' + esc(item.modelName || item.giftName) + '</h3><p>' + esc(item.caseName) + ' · ' + esc(date) + '</p><button class="secondary" data-view-item="' + esc(item.id) + '">Посмотреть</button></article>';
     }).join('') + '</div>';
   }
 
@@ -410,19 +391,20 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
     const root = $('profileRoot');
     if (!state.user) return;
     const name = state.user.firstName || 'Collector';
-    const handle = state.user.username ? '@' + state.user.username : 'Telegram account connected';
+    const handle = state.user.username ? '@' + state.user.username : 'Telegram';
     const b = state.user.balances || {stars:0,ton:0};
     const starsClaimed = Boolean(state.user.starterStarsClaimed);
     const tonClaimed = Boolean(state.user.starterTonClaimed);
     const claimed = starsClaimed && tonClaimed;
     root.innerHTML = '<div class="panel"><div class="profile-head"><div class="avatar">' + esc(name.slice(0,1).toUpperCase()) + '</div><div><h2>' + esc(name) + '</h2><p>' + esc(handle) + '</p></div></div>' +
-      '<div class="two-col"><div class="balance-large"><span>⭐ INTERNAL STARS</span><strong>' + Number(b.stars).toLocaleString('ru-RU') + '</strong></div><div class="balance-large"><span>TON POINTS</span><strong>' + Number(b.ton).toLocaleString('ru-RU') + '</strong></div></div>' +
-      (claimed ? '<p class="status">Тестовый баланс 10 000 Stars и 500 TON points уже получен.</p>' : '<div style="margin-top:16px"><button class="primary full" id="claimStarterStars">Получить тестовый баланс</button><p class="status">Одноразовый бонус: ' + (starsClaimed ? '500 TON points' : '10 000 Stars и 500 TON points') + '.</p></div>') +
+      '<div class="two-col"><div class="balance-large"><span><img class="currency-icon" src="/assets/currency/star.svg" alt="Stars"> Игровые Stars</span><strong>' + Number(b.stars).toLocaleString('ru-RU') + '</strong></div><div class="balance-large"><span><img class="currency-icon" src="/assets/currency/ton.svg" alt=""> Игровые TON</span><strong>' + Number(b.ton).toLocaleString('ru-RU') + '</strong></div></div>' +
+      (claimed ? '<p class="status">Стартовый бонус получен.</p>' : '<div style="margin-top:16px"><button class="primary full" id="claimStarterStars">Получить тестовый баланс</button><p class="status">Одноразовый бонус: ' + (starsClaimed ? '500 TON points' : '10 000 Stars и 500 TON points') + '.</p></div>') +
       '<p>Всего открытий: <strong>' + Number(state.user.totalOpens || 0) + '</strong></p>' +
-      '<p class="fine-print">Stars и TON здесь — внутренние очки WaysCase, а не Telegram Stars или криптовалюта TON. Они не продаются, не переводятся и не выводятся. Открытия бесплатные и не расходуют баланс.</p></div>';
+      '<p class="fine-print">Игровые очки и подарки без вывода.</p></div>';
   }
 
   function renderAll() {
+    exchange.render();
     renderBalances();
     renderCases();
     renderInventory();
@@ -435,33 +417,25 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
 
   function openModal(caseId, showContents = false) {
     const c = getCase(caseId);
-    if (!c) return;
+    if (!c || state.busy) return;
     state.activeCase = c;
-    const readyGifts = c.gifts.filter(g => g.models && g.models.length > 0);
-    const giftChance = readyGifts.length ? (100 / readyGifts.length) : 0;
+    state.caseVersion = state.catalogue.market.version;
     $('modalTitle').textContent = c.title;
-    $('modalSubtitle').textContent = c.subtitle + ' · ' + c.gifts.length + ' подарков · ' + c.gifts.length + ' моделей';
-    $('modalPreview').textContent = showContents ? 'В кейсе ' + c.gifts.length + ' подарков, у каждого закреплена одна модель.' : 'Бесплатное открытие: случайный подарок из содержимого кейса.';
+    $('modalSubtitle').textContent = c.gifts.length + ' подарков';
+    $('modalPreview').textContent = showContents ? 'Минимум коллекции на Fragment · ' + state.catalogue.market.date : '';
     $('modalGiftList').hidden = !showContents;
-    $('orderNote').hidden = !showContents;
-    $('modalGiftList').innerHTML = c.gifts.map(g => {
-      const model = Array.isArray(g.models) ? g.models[0] : null;
-      return '<section class="model-group"><div class="model-group-head"><strong>' + esc(g.name) + '</strong><small>1 модель</small></div>' +
-        (model ? '<div class="model-grid"><article class="model-card"><div class="model-image">' + imgOrEmoji(g,model) + '</div><strong>' + esc(model.telegramName || model.name) + '</strong><small>' + esc(model.rarity || 'Collectible') + '</small></article></div>' : '<p class="status">Модель этого подарка пока недоступна.</p>') + '</section>';
-    }).join('');
-    wireImageFallback($('modalGiftList'));
-    $('openCaseButton').disabled = !canOpen(c.id);
-    $('openCaseButton').textContent = readyGifts.length === c.gifts.length ? 'Открыть бесплатно' : 'Модели загружаются';
+    $('modalGiftList').innerHTML = c.gifts.map(g => '<div class="gift-row"><div class="gift-thumb">' + giftImage(g) + '</div><div class="gift-text"><strong>' + esc(g.name) + '</strong><small>' + esc(g.models[0].name) + '</small>' + exchange.price(g.id) + '</div><span class="rarity">' + g.chance.toLocaleString('ru-RU',{maximumFractionDigits:4}) + ' %</span></div>').join('');
+    $('openCaseButton').disabled = !canOpen(c);
+    $('openCaseButton').textContent = 'Открыть за ' + c.price + ' ★';
     $('openCaseButton').hidden = false;
     $('openingStage').classList.remove('show');
-    $('openingResult').classList.remove('show');
-    $('modalNotice').textContent = 'Бесплатно и без ограничений. Баланс не расходуется и не начисляется.';
+    $('modalNotice').textContent = !state.user ? 'Войди через Telegram.' : !canOpen(c) ? 'Недостаточно внутренних Stars.' : '';
     $('caseModal').classList.add('show');
   }
 
   function rouletteCard(gift, model, isTarget) {
     return '<div class="roulette-card"' + (isTarget ? ' data-target="true"' : '') + '>' +
-      imgOrEmoji(gift, model) + '<small>' + esc(model ? model.telegramName : gift.name) + '</small></div>';
+      exchange.price(gift.id) + giftImage(gift, model) + '<small>' + esc(model ? model.telegramName : gift.name) + '</small></div>';
   }
 
   async function animateOpening(c, item) {
@@ -469,7 +443,6 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
     const track = $('rouletteTrack');
     const viewport = $('rouletteWindow');
     stage.classList.add('show');
-    $('openingResult').classList.remove('show');
     const targetGift = giftForId(item.giftId) || {id:item.giftId,name:item.giftName,emoji:item.giftEmoji,models:[]};
     const targetModel = item.modelImageUrl ? {name:item.modelName,telegramName:item.modelName,imageUrl:item.modelImageUrl,rarity:item.rarity} : null;
     const targetIndex = 32;
@@ -483,7 +456,7 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
       }
     }
     track.innerHTML = cards.join('');
-    wireImageFallback(track);
+
     track.style.transition = 'none';
     track.style.transform = 'translateX(0px)';
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
@@ -492,135 +465,52 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
     track.style.transition = 'transform 4.8s cubic-bezier(.08,.68,.08,1)';
     track.style.transform = 'translateX(' + (-Math.max(0,distance)) + 'px)';
     await new Promise(resolve => setTimeout(resolve,5000));
-    $('resultImage').innerHTML = imgOrEmoji(targetGift,targetModel);
-    wireImageFallback($('resultImage'));
-    $('resultName').textContent = item.modelName || item.giftName;
-    $('resultMeta').textContent = (item.rarity || 'Telegram collectible model preview') + ' · добавлено в инвентарь';
-    $('openingResult').classList.add('show');
+    $('caseModal').classList.remove('show');
+    exchange.reward(item, true);
   }
 
   async function openCase(caseId) {
     const c = getCase(caseId);
-    if (!c || !canOpen(caseId)) return;
+    if (!c || !canOpen(c)) return;
     state.busy = true;
     $('openCaseButton').disabled = true;
     $('openCaseButton').textContent = 'Открываем…';
-    $('modalNotice').textContent = 'Сервер сохраняет результат и обновляет твой профиль…';
+    $('modalNotice').textContent = '';
     try {
-      const response = await api('/api/open',{method:'POST',body:JSON.stringify({caseId})});
-      await animateOpening(c,response.item);
-      const me = await api('/api/me');
-      state.user = me.user;
+      const requestId = openingRequests.get(caseId) || crypto.randomUUID();
+      openingRequests.set(caseId, requestId);
+      const response = await api('/api/open',{method:'POST',body:JSON.stringify({caseId, requestId, version:state.caseVersion})});
+      openingRequests.delete(caseId);
+      state.user.balances = response.balances;
+      if (!state.user.inventory.some(i => i.id === response.item.id)) state.user.inventory.unshift(response.item);
+      state.user.totalOpens = response.totalOpens;
       renderAll();
-      $('modalPreview').textContent = 'Получен ' + (response.item.modelName || response.item.giftName) + '. Предмет сохранён в серверном инвентаре.';
-      $('openCaseButton').textContent = 'Открыть ещё раз';
-      $('openCaseButton').disabled = false;
-      $('modalNotice').textContent = 'Получен подарок. Открытие бесплатное, баланс не изменился.';
+      $('modalGiftList').hidden = true;
+      $('modalNotice').textContent = '';
+      await animateOpening(c,response.item);
+      if (state.user.balances.stars < c.price) $('modalNotice').textContent = 'Недостаточно внутренних Stars.';
     } catch (error) {
-      $('modalNotice').textContent = error.message || 'Не удалось открыть коллекцию.';
-      $('openCaseButton').textContent = 'Повторить';
-      $('openCaseButton').disabled = error.code === 'model_unavailable';
-      if (error.code === 'model_unavailable') $('openCaseButton').textContent = 'Модель пока недоступна';
+      if (error.code === 'quote_changed') {
+        await exchange.refreshIfDue(true);
+        state.busy = false;
+        renderCases(); openModal(caseId,true);
+      }
+      $('modalNotice').textContent = error.message;
     } finally {
       state.busy = false;
+      $('openCaseButton').textContent = 'Открыть за ' + state.activeCase.price + ' ★';
+      $('openCaseButton').disabled = !canOpen(state.activeCase);
     }
   }
 
-  let rocketTimer = null;
-  let rocketStartedAt = 0;
-  let rocketDuration = 0;
-  let rocketCrashMultiplier = 1;
-  let rocketRecord = 0;
-
-  function finishRocketRound(crashed) {
-    if (!rocketTimer) return;
-    clearInterval(rocketTimer);
-    rocketTimer = null;
-
-    const elapsed = Math.min(rocketDuration, Math.max(0, (Date.now() - rocketStartedAt) / 1000));
-    const progress = crashed ? 1 : Math.min(1, elapsed / rocketDuration);
-    const multiplier = crashed ? rocketCrashMultiplier : 1 + (rocketCrashMultiplier - 1) * progress;
-    $('rocketMultiplier').textContent = multiplier.toFixed(2) + 'x';
-    $('rocketRoundState').textContent = crashed ? 'Сбой' : 'Завершён';
-
-    const stage = $('rocketStage');
-    const button = $('rocketStart');
-    const status = $('rocketStatus');
-    stage.classList.remove('running');
-    stage.classList.add(crashed ? 'crashed' : 'complete');
-    if (crashed) {
-      const ship = $('rocketShip');
-      const shipRect = ship.getBoundingClientRect();
-      const stageRect = stage.getBoundingClientRect();
-      const x = shipRect.left - stageRect.left + shipRect.width / 2;
-      const y = shipRect.top - stageRect.top + shipRect.height / 2;
-      $('rocketExplosion').style.left = x + 'px';
-      $('rocketExplosion').style.top = y + 'px';
-      ship.style.left = (x - shipRect.width / 2) + 'px';
-      ship.style.top = (y - shipRect.height / 2) + 'px';
-    }
-
-    if (crashed) {
-      $('rocketRoundState').textContent = 'Взрыв';
-      status.textContent = 'Случайный сбой на ' + multiplier.toFixed(2) + 'x. Раунд завершён. Баланс не изменился.';
-      button.textContent = 'Повторить запуск';
-    } else {
-      rocketRecord = Math.max(rocketRecord, multiplier);
-      $('rocketRecord').textContent = rocketRecord.toFixed(2) + 'x';
-      status.textContent = 'Раунд завершён вручную на ' + multiplier.toFixed(2) + 'x. Это визуальный показатель.';
-      button.textContent = 'Запустить ещё раз';
-    }
-    button.disabled = false;
-  }
-
-  function launchRocket() {
-    if (rocketTimer) {
-      finishRocketRound(false);
-      return;
-    }
-
-    const stage = $('rocketStage');
-    const button = $('rocketStart');
-    const status = $('rocketStatus');
-    stage.classList.remove('running', 'complete', 'crashed');
-    stage.style.removeProperty('--rocket-duration');
-    void stage.offsetWidth;
-
-    rocketStartedAt = Date.now();
-    rocketDuration = 4 + Math.random() * 8;
-    rocketCrashMultiplier = (100 + Math.floor(Math.random() * 9901)) / 100;
-    stage.classList.add('running');
-
-    const ship = $('rocketShip');
-    ship.style.left = '7%';
-    ship.style.top = '68%';
-    $('rocketExplosion').style.left = '50%';
-    $('rocketExplosion').style.top = '38%';
-    $('rocketMultiplier').textContent = '1.00x';
-    $('rocketRoundState').textContent = 'В полёте';
-    button.disabled = false;
-    button.textContent = 'Завершить полёт';
-    status.textContent = 'Случайная точка сбоя выбрана. Ракета движется по сцене; баланс не затрагивается.';
-    
-    rocketTimer = setInterval(() => {
-      const elapsed = (Date.now() - rocketStartedAt) / 1000;
-      const progress = Math.min(1, elapsed / rocketDuration);
-      const multiplier = 1 + (rocketCrashMultiplier - 1) * progress;
-      $('rocketMultiplier').textContent = multiplier.toFixed(2) + 'x';
-      const ship = $('rocketShip');
-      const x = 7 + progress * 72;
-      const y = 68 - progress * 47;
-      ship.style.left = x + '%';
-      ship.style.top = y + '%';
-      if (progress >= 1) finishRocketRound(true);
-    }, 40);
-  }
-
-  $('rocketStart').addEventListener('click', launchRocket);
-
+  const showFlight = mountFlight({ api, onBalance(balances) {
+    if (state.user) { state.user.balances = balances; renderBalances(); renderProfile(); }
+  }});
   document.querySelectorAll('[data-tab]').forEach(button => {
     button.addEventListener('click',() => {
       document.querySelectorAll('[data-tab]').forEach(b => b.classList.toggle('active',b === button));
+      if (['gifts','upgrade'].includes(button.dataset.tab)) exchange.refreshIfDue();
+      showFlight(button.dataset.tab === 'rocket' && !!state.user);
       document.querySelectorAll('.page').forEach(p => p.hidden = p.id !== 'page-' + button.dataset.tab);
     });
   });
@@ -635,7 +525,7 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
       state.user = me.user;
       renderAll();
     } catch (error) {
-      if (error.code === 'starter_stars_already_claimed') {
+      if (error.code === 'starter_balance_already_claimed') {
         const me = await api('/api/me').catch(() => null);
         if (me) state.user = me.user;
         renderAll();
@@ -656,18 +546,18 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
   $('openCaseButton').addEventListener('click',() => {
     if (state.activeCase) openCase(state.activeCase.id);
   });
-  $('modalClose').addEventListener('click',() => $('caseModal').classList.remove('show'));
-  $('modalDone').addEventListener('click',() => $('caseModal').classList.remove('show'));
+  $('modalClose').addEventListener('click',() => !state.busy && $('caseModal').classList.remove('show'));
+  $('modalDone').addEventListener('click',() => !state.busy && $('caseModal').classList.remove('show'));
   $('caseModal').addEventListener('click',event => {
-    if (event.target === $('caseModal')) $('caseModal').classList.remove('show');
+    if (!state.busy && event.target === $('caseModal')) $('caseModal').classList.remove('show');
   });
 
   async function init() {
     try {
       const catalogue = await api('/api/catalog');
       state.catalogue = catalogue;
-      $('catalogStatus').textContent = catalogue.modelSource + '. Коллекций: ' + catalogue.cases.length + ', моделей: ' + Number(catalogue.modelCount || 0) + '.';
-      if (!catalogue.modelCount) $('catalogStatus').classList.add('error');
+      $('catalogStatus').hidden = true;
+      exchange.render();
       renderCases();
     } catch (error) {
       $('catalogStatus').textContent = 'Не удалось загрузить каталог: ' + error.message;
@@ -683,6 +573,7 @@ body{background:radial-gradient(ellipse at 78% -8%,#12351f 0,transparent 38%),ra
       const me = await api('/api/me');
       state.user = me.user;
       $('authGate').hidden = true;
+      showFlight(!$('page-rocket').hidden);
       renderAll();
     } catch (error) {
       $('authGate').hidden = false;

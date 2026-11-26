@@ -69,5 +69,23 @@ test('authenticated concurrent openings debit once; insufficient balance never a
   assert.equal((await post('/api/sell',{itemId:first.items[2].id,version:batch.version})).status,200);
   assert.equal((await post('/api/open',batch)).status,409);
   assert.equal((await profile()).inventory.length,4);
+  const sellGroup = body => post('/api/sell-batch',body);
+  const untouched = await profile();
+  for (const requestId of [batch.requestId,undefined,randomUUID(),args.requestId]) {
+    assert.equal((await sellGroup({requestId,version:batch.version})).status,409);
+  }
+  assert.deepEqual(await profile(),untouched);
+  const pair = {...batch,quantity:2,requestId:randomUUID()};
+  const opening = await (await post('/api/open',pair)).json();
+  const expected = opening.items.reduce((n,i)=>n+catalogue.market.prices[i.giftId].stars,0);
+  const prior = await profile();
+  assert.equal((await sellGroup({...pair,version:'stale'})).status,409);
+  assert.deepEqual(await profile(),prior);
+  const receipts = await Promise.all([sellGroup(pair),sellGroup(pair)].map(async p=>(await p).json()));
+  assert.deepEqual(receipts[0],receipts[1]);
+  assert.equal(receipts[0].receipt.credited,expected);
+  assert.equal(receipts[0].user.balances.stars,prior.balances.stars+expected);
+  assert.deepEqual(receipts[0].user.inventory,untouched.inventory);
+  assert.equal((await post('/api/sell',{itemId:opening.item.id,version:pair.version})).status,409);
 
 });

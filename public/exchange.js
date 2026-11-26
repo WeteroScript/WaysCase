@@ -155,26 +155,45 @@ function mountExchange({state, api, $, esc, giftForId, renderAll, upgradeThresho
     finally { selling=false; $('keepGift').disabled=false; sellButton(); }
   };
   const batchSheet = $('batchSheet');
-  let batchItems = [];
+  let batchItems = [], batchCost = 0, batchSelling = false, credited = null;
+  const stars = n => number.format(n) + ' ★';
   function renderBatch() {
-    const owned = new Set(ownItems().map(i => i.id));
-    $('batchGrid').innerHTML = batchItems.map(item => {
-      const sold = !owned.has(item.id);
-      return `<button class="market-card" data-prize="${esc(item.id)}" ${sold?'disabled':''}>
-        <img class="art" src="${esc(item.modelImageUrl)}" alt=""><strong>${esc(item.giftName)}</strong>
-        <small>${esc(item.modelName)}</small>${sold?'Продано':price(item.giftId)}</button>`;
-    }).join('');
+    const prices = batchItems.map(item => quote(item.giftId)?.stars);
+    const value = credited ?? (prices.every(Number.isFinite) ? prices.reduce((a,b)=>a+b,0) : null);
+    const net = value === null ? null : value-batchCost;
+    $('batchGrid').innerHTML = batchItems.map(item => `<article class="market-card">
+      <img class="art" src="${esc(item.modelImageUrl)}" alt=""><strong>${esc(item.giftName)}</strong>
+      <small>${esc(item.modelName)}</small>${price(item.giftId)}</article>`).join('');
+    $('batchCost').textContent = stars(batchCost);
+    $('batchValue').textContent = value === null ? 'Нет цены' : stars(value);
+    $('batchNet').textContent = net === null ? 'Нет оценки' : net === 0 ? 'Без убытка · 0 ★' :
+      (net > 0 ? 'Прибыль +' : 'Убыток −') + stars(Math.abs(net));
+    $('batchNet').dataset.sign = Math.sign(net);
+    $('batchSell').disabled = batchSelling || !tradable() || value === null;
+    $('batchSell').hidden = credited !== null;
+    $('batchSell').textContent = batchSelling ? 'Продаём…' : 'Продать всё';
+    $('batchDone').disabled = batchSelling;
+    $('batchDone').textContent = credited === null ? 'Оставить всё' : 'Закрыть';
   }
-  function batch(items) {
-    batchItems = items;
+  function batch(items,cost) {
+    batchItems = items; batchCost = cost; credited = null;
     $('batchHeading').textContent = 'Ваши подарки · ' + items.length;
+    $('batchStatus').textContent = tradable() ? '' : 'Архивная оценка. Продажа недоступна.';
     renderBatch(); batchSheet.showModal();
   }
-  $('batchGrid').onclick = event => {
-    const id = event.target.closest('[data-prize]')?.dataset.prize;
-    const item = batchItems.find(i => i.id === id);
-    if (item && ownItems().some(i => i.id === id)) reward(item,true);
+  $('batchSell').onclick = async () => {
+    if (batchSelling || credited !== null || !batchItems.length) return;
+    batchSelling = true; renderBatch();
+    try {
+      const data = await post('/api/sell-batch',{requestId:batchItems[0].requestId,version:market().version});
+      credited = data.receipt.credited; state.user = data.user; renderAll();
+      $('batchStatus').textContent = 'Все подарки проданы. Начислено ' + stars(credited) + '.';
+    } catch (error) {
+      $('batchStatus').textContent = error.message;
+      await refreshIfDue(true);
+    } finally { batchSelling = false; renderBatch(); }
   };
+  batchSheet.oncancel = e => { if (batchSelling) e.preventDefault(); };
   $('batchDone').onclick = () => batchSheet.close();
   batchSheet.onclose = () => { batchItems = []; $('batchGrid').replaceChildren(); };
   return {render,price,reward,batch,refreshIfDue};

@@ -83,7 +83,14 @@
 <dialog class="sheet" id="batchSheet" aria-labelledby="batchHeading">
   <div class="sheet-head"><h2 id="batchHeading">Выигрыш</h2></div>
   <div class="pick-grid" id="batchGrid"></div>
-  <button class="primary full" id="batchDone">Готово</button>
+  <div class="batch-summary">
+    <p>Стоимость кейсов <strong id="batchCost"></strong></p>
+    <p>Стоимость подарков <strong id="batchValue"></strong></p>
+    <p>Итог <strong id="batchNet"></strong></p>
+  </div>
+  <p id="batchStatus" class="status" role="status"></p>
+  <div class="batch-actions"><button class="secondary" id="batchDone">Оставить всё</button>
+    <button class="primary" id="batchSell">Продать всё</button></div>
 </dialog>
 <dialog class="sheet reward" id="rewardSheet" aria-labelledby="rewardHeading">
   <div class="sheet-head"><h2 id="rewardHeading">Ваш подарок</h2></div>
@@ -154,7 +161,7 @@ import { upgradeThreshold } from "/upgrade-odds.mjs";
           <span class="edition-number">№ ${String(c.number).padStart(2,'0')}</span>
           <h3>${esc(c.title)}</h3><p class="case-meta">${giftCount(c.gifts.length)}</p>
           <div class="case-card-actions">
-            <button class="primary" data-open-case="${esc(c.id)}" ${c.totalWeight ? '' : 'disabled'}>За ${c.price.toLocaleString('ru-RU')} ★</button>
+            <button class="primary" data-open-case="${esc(c.id)}" ${c.totalWeight ? '' : 'disabled'}><span>Открыть</span><strong>${c.price.toLocaleString('ru-RU')} <b>★</b></strong></button>
             <button class="case-info" data-info-case="${esc(c.id)}" aria-label="Содержимое: ${esc(c.title)}" title="Содержимое кейса">ⓘ</button>
           </div></article>`
       ).join('') + '</div></section>';
@@ -268,7 +275,7 @@ import { upgradeThreshold } from "/upgrade-odds.mjs";
     await new Promise(resolve => setTimeout(resolve,duration));
     $('caseModal').classList.remove('show');
     stage.replaceChildren();
-    if (items.length===1) exchange.reward(items[0],true); else exchange.batch(items);
+    if (items.length===1) exchange.reward(items[0],true); else exchange.batch(items,c.price * items.length);
   }
 
   async function openCase(caseId) {

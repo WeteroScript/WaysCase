@@ -101,3 +101,11 @@ h1 { font-size: clamp(28px,5vw,40px); letter-spacing: -.065em }
   @keyframes arrive { from{opacity:0;transform:translateY(7px)} to{opacity:1;transform:none} }
 }
 @media(prefers-reduced-motion:reduce) { *,*::before,*::after { transition:none!important; animation:none!important } }
+/* Give the purchase action priority; the quieter outlined control opens the contents. */
+.case-card-actions { align-items:center;gap:7px }
+.case-card-actions .primary { min-width:0;min-height:48px;padding:5px 8px;border-radius:14px;display:grid;justify-items:center;align-content:center;background:linear-gradient(135deg,#2b579c,var(--accent) 65%,#122f63);box-shadow:inset 0 1px 0 #ffffff38,0 2px 5px #0c234429;line-height:1.2 }
+.case-card-actions .primary span { color:#dfebff;font-size:11px;font-weight:500 }
+.case-card-actions .primary strong { font-size:14px;font-variant-numeric:tabular-nums;white-space:nowrap }
+.case-card-actions .primary b { color:#ffdf98;font-size:12px }
+.case-card-actions .case-info { width:44px;min-height:44px;border-radius:50%;background:transparent;color:var(--pencil);border:1px solid currentColor }
+@media(hover:hover){.case-card-actions button:not(:disabled):hover { filter:brightness(1.12) }}

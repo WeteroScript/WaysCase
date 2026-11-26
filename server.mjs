@@ -1,6 +1,6 @@
 import { presentGift } from './lib/gift-art.mjs';
 import { getMarket } from './lib/market.mjs';
-import { trade } from './lib/trades.mjs';
+import { trade, sellBatch } from './lib/trades.mjs';
 import { buildCases, gifts, draw } from './lib/catalog.mjs';
 import http from 'node:http';
 import { readFile, stat, mkdir, writeFile, rename } from 'node:fs/promises';
@@ -382,13 +382,13 @@ async function handleApi(req, res, url) {
     return json(res, outcome.status, outcome.body);
   }
 
-  if (req.method === 'POST' && ['/api/sell','/api/upgrade'].includes(url.pathname)) {
+  if (req.method === 'POST' && ['/api/sell','/api/sell-batch','/api/upgrade'].includes(url.pathname)) {
     const identity = authFromRequest(req);
     const body = await readJsonBody(req);
     const market = await getMarket();
     const result = await mutateDatabase(db => {
       const user = ensureUser(db, identity);
-      const receipt = trade(user, url.pathname.slice(5), body, market);
+      const receipt = url.pathname === '/api/sell-batch' ? sellBatch(user,body,market) : trade(user, url.pathname.slice(5), body, market);
       return {ok:true,receipt,user:userSummary(user)};
     });
     return json(res,200,result);

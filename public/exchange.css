@@ -19,7 +19,12 @@ img[src="/assets/gifts/lunar-snake.webp"],.reward-motion.upright-snake{transform
 .quantities span { display:block;padding:8px 0;border-radius:6px;text-align:center;background:var(--page) }
 .quantities input:checked + span { background:var(--accent);color:white }
 .quantities input:focus-visible + span { outline:2px solid var(--accent-light) }
-#batchDone { margin-top:16px }
+.batch-summary { margin:16px 0 10px;padding:12px;border-radius:12px;background:var(--page) }
+.batch-summary p { display:flex;justify-content:space-between;gap:10px;font-size:13px;color:var(--muted) }
+.batch-summary strong { color:white;font-variant-numeric:tabular-nums }
+.batch-summary p:last-child { border-top:1px solid var(--line);margin-top:8px;padding-top:8px }
+#batchNet[data-sign="1"] { color:#91dfaf } #batchNet[data-sign="-1"] { color:#ffb4af }
+.batch-actions { display:flex;gap:8px;margin-top:12px }.batch-actions button { flex:1 }
 @media(prefers-reduced-motion:no-preference){#batchSheet[open] .market-card{animation:arrive .32s ease-out both}#batchSheet .market-card:nth-child(even){animation-delay:.08s}}
 .upgrade-slot label { min-height:2.5em;display:grid;align-items:center }
 .opening.multi.show { display:grid;gap:3px }

@@ -267,12 +267,9 @@ async function sendTelegramMessage(message) {
   if (!chatId) return;
   const text = message.text || '';
   if (/^\/start(?:@[_a-zA-Z0-9]+)?(?:\s|$)/i.test(text)) {
-    const firstName = String(message.from?.first_name || 'коллекционер')
-      .replaceAll('&', '&amp;').replaceAll('<', '&lt;').replaceAll('>', '&gt;').replaceAll('"', '&quot;');
     await telegramApi('sendMessage', {
       chat_id: chatId,
-      text: 'Привет, <b>' + firstName + '</b>! ✨\n\nДобро пожаловать в <b>WaysCase</b> — коллекционное приложение с моделями Telegram Gifts.\n\nНажми кнопку ниже, чтобы открыть приложение.',
-      parse_mode: 'HTML',
+      text: 'Кейсы и подарки за игровые Stars.',
       reply_markup: {
         inline_keyboard: [[{ text: 'Открыть WaysCase', web_app: { url: WEBAPP_URL } }]],
       },

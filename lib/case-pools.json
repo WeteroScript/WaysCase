@@ -43,7 +43,11 @@
     "surge-board",
     "easter-egg",
     "holiday-drink",
-    "signet-ring"
+    "signet-ring",
+    "trapped-heart",
+    "ufc-strike",
+    "sky-stilettos",
+    "cupid-charm"
   ],
   "love-letter": [
     "heart-locket",
@@ -60,7 +64,13 @@
     "bunny-muffin",
     "liberty-figure",
     "fine-pen",
-    "happy-brownie"
+    "happy-brownie",
+    "lucky-locket",
+    "love-potion",
+    "ionic-dryer",
+    "snoop-cigar",
+    "trapped-heart",
+    "ufc-strike"
   ],
   "night-sky": [
     "hanging-star",
@@ -78,7 +88,9 @@
     "clover-pin",
     "vice-cream",
     "sleigh-bell",
-    "desk-calendar"
+    "desk-calendar",
+    "crystal-ball",
+    "sakura-flower"
   ],
   "toy-world": [
     "toy-bear",
@@ -97,7 +109,8 @@
     "scared-cat",
     "ufc-strike",
     "victory-medal",
-    "record-player"
+    "record-player",
+    "cupid-charm"
   ],
   "ice-crown": [
     "diamond-ring",
@@ -117,7 +130,8 @@
     "crystal-ball",
     "ginger-cookie",
     "snake-box",
-    "bow-tie"
+    "bow-tie",
+    "toy-bear"
   ],
   "neon-wave": [
     "input-key",
@@ -138,7 +152,12 @@
     "artisan-brick",
     "heroic-helmet",
     "party-sparkler",
-    "lunar-snake"
+    "lunar-snake",
+    "sharp-tongue",
+    "kissed-frog",
+    "swiss-watch",
+    "magic-potion",
+    "gem-signet"
   ],
   "peach-club": [
     "precious-peach",
@@ -183,6 +202,87 @@
     "intelligence-cup",
     "b-day-candle",
     "light-sword",
-    "jingle-bells"
+    "jingle-bells",
+    "swiss-watch",
+    "magic-potion",
+    "gem-signet",
+    "artisan-brick",
+    "low-rider"
+  ],
+  "film-room": [
+    "mini-oscar",
+    "electric-skull",
+    "eternal-rose",
+    "toy-bear",
+    "voodoo-doll",
+    "crystal-ball",
+    "heroic-helmet",
+    "sharp-tongue",
+    "top-hat",
+    "scared-cat",
+    "mighty-arm",
+    "loot-bag"
+  ],
+  "road-trip": [
+    "low-rider",
+    "artisan-brick",
+    "input-key",
+    "stellar-rocket",
+    "swag-bag",
+    "swiss-watch",
+    "diamond-ring",
+    "durovs-cap",
+    "loot-bag",
+    "nail-bracelet",
+    "westside-sign",
+    "vintage-cigar"
+  ],
+  "atelier": [
+    "nail-bracelet",
+    "lush-bouquet",
+    "precious-peach",
+    "perfume-bottle",
+    "gem-signet",
+    "diamond-ring",
+    "signet-ring",
+    "bonded-ring",
+    "moon-pendant",
+    "top-hat",
+    "heart-locket",
+    "durovs-glasses"
+  ],
+  "observatory": [
+    "astral-shard",
+    "crystal-ball",
+    "ion-gem",
+    "moon-pendant",
+    "hanging-star",
+    "stellar-rocket",
+    "magic-potion",
+    "genie-lamp",
+    "eternal-candle",
+    "intelligence-cup",
+    "diamond-ring",
+    "algorithm-cup",
+    "heroic-helmet",
+    "scared-cat",
+    "precious-peach",
+    "durovs-cap",
+    "resistance-dog"
+  ],
+  "vault": [
+    "loot-bag",
+    "precious-peach",
+    "scared-cat",
+    "heroic-helmet",
+    "astral-shard",
+    "durovs-glasses",
+    "gem-signet",
+    "swiss-watch",
+    "resistance-dog",
+    "durovs-cap",
+    "heart-locket",
+    "plush-pepe",
+    "intelligence-cup"
   ]
 }

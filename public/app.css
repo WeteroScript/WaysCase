@@ -1,13 +1,13 @@
 :root {
   color-scheme: dark;
   font: 15px/1.45 system-ui, sans-serif;
-  --page: #101311;
-  --surface: #1b201d;
-  --line: #353d37;
-  --muted: #abb5ae;
-  --accent: #8ce6aa;
+  --page: #16131c;
+  --surface: #231f2b;
+  --line: #45404f;
+  --muted: #bdb3c9;
+  --accent: #f6ba87;
   background: var(--page);
-  color: #f2f5f2;
+  color: #fff8f1;
 }
 * { box-sizing: border-box }
 [hidden], .status:empty, .notice:empty { display: none !important }
@@ -24,25 +24,22 @@ h2 { font-size: 21px }
 .topbar, .modal-head { justify-content: space-between }
 .balances { gap: 16px; flex-wrap: wrap; justify-content: end }
 .balance { gap: 5px; font-size: 14px; font-variant-numeric: tabular-nums }
-.balance .currency-icon { width: 17px; height: 17px }
 .nav { display: flex; margin: 16px 0 20px; border-bottom: 1px solid var(--line) }
 .nav button { padding: 10px 8px; background: none; border: 0; border-bottom: 2px solid transparent; color: var(--muted); font-size: 13px }
 .nav button.active { border-color: var(--accent); color: #fff }
 .section-head, .market-head { margin-bottom: 12px }
 .primary, .secondary, .case-info, .close { min-height: 42px; padding: 8px 12px; border: 0; border-radius: 8px; font-size: 14px; font-weight: 600 }
-.primary { background: var(--accent); color: #102016 }
-.secondary, .case-info, .close { background: #303832 }
+.primary { background: var(--accent); color: #271525 }
+.secondary, .case-info, .close { background: #37303f }
 .close, .case-info { width: 42px; padding: 0; display: grid; place-items: center }
 .close { font-size: 22px }
-.case-info svg { width: 20px; height: 20px }
 .full { width: 100% }
 .status, .notice, .fine-print, .profile-head p, .modal-head p { color: var(--muted); font-size: 13px }
 .notice:not(:empty), .panel p { margin-top: 10px }
 .error { color: #ffb4af }
-.case-grid, .inventory-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(206px,45%),1fr)); gap: 14px }
+.inventory-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(206px,45%),1fr)); gap: 14px }
 .case-card, .inventory-item, .panel, .gate { min-width: 0; border: 1px solid var(--line); border-radius: 12px; background: var(--surface) }
 .case-card { overflow: hidden }
-.case-art img { display: block; width: 100%; height: 100% }
 .case-body, .inventory-item { padding: 12px }
 .case-body h3 { font-size: 17px }
 .case-meta, .inventory-item p { font-size: 12px; color: var(--muted) }
@@ -72,7 +69,39 @@ h2 { font-size: 21px }
 .roulette-card > img { width: 80px; object-fit: contain }
 .roulette-card small { font-size: 11px; text-align: center }
 @media(max-width:600px) {
-  .case-grid, .inventory-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px }
+  .inventory-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px }
   .case-body { padding: 10px }
   .case-card-actions .primary { font-size: 12px; padding: 6px }
 }
+/* Ticket catalogue: the typography and tear line identify an edition without cover art. */
+.topbar { padding-block: 10px }
+h1, .page > h2, .section-head h2, .market-head h2 { font-family: Georgia, 'Times New Roman', serif; font-weight: 500 }
+h1 { font-size: clamp(28px,5vw,40px); letter-spacing: -.065em }
+.balance { padding: 6px 9px; border-radius: 6px; background: var(--surface) }
+.balance span { color: var(--accent); font: 600 12px system-ui }
+.nav { margin-bottom: 22px; border: 0; background: var(--surface); padding: 4px; border-radius: 10px; gap: 2px }
+.nav button { border: 0; border-radius: 7px; transition: background-color .18s,color .18s }
+.nav button.active { background: #4c3e50; color: #fff8ee }
+.editions { margin: 16px 0 30px; --paper: #f2e6d9; --ink: #312736; --pencil: #68596a }
+.editions.premium { --paper: #513952; --ink: #ffe7bb; --pencil: #e1c5cd }
+.editions > h3 { display: flex; gap: 8px; align-items: center; margin: 0 0 12px; font-size: 15px }
+.editions > h3 small { font: 12px ui-monospace,monospace; color:var(--muted) }
+.edition-grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill,minmax(min(188px,45%),1fr)) }
+.case-card { position: relative; display: flex; flex-direction: column; min-width: 0; padding: 9px 14px 0; background: var(--paper); color: var(--ink); border: 0; border-radius: 5px 15px 5px 15px }
+.case-heading, .edition-price { display: flex; justify-content: space-between; align-items: center }
+.edition-number { font: 12px ui-monospace,monospace; color:var(--pencil); letter-spacing:.06em }
+.case-heading .case-info { width: 40px; min-height: 40px; margin-right:-8px; background: transparent; font-size: 20px; color:var(--pencil) }
+.case-card h3 { font: 500 clamp(20px,3.5vw,25px)/1.1 Georgia,serif; overflow-wrap:anywhere }
+.case-meta { color:var(--pencil); padding:5px 0 16px; margin-bottom:auto }
+.edition-price { position: relative; width:calc(100% + 28px); margin-inline:-14px; padding:12px 14px; border:0; border-top:1px dashed var(--pencil); background:transparent; color:inherit; font:700 16px ui-monospace,monospace; text-align:left }
+.edition-price::before,.edition-price::after { content:''; position:absolute; top:-5px; width:9px; height:9px; border-radius:50%; background:var(--page) }
+.edition-price::before { left:-5px }.edition-price::after { right:-5px }
+.edition-price:hover { background:#00000009 }.edition-price span { transition:transform .2s }.edition-price:hover span { transform:translate(2px,-2px) }
+.case-card :focus-visible { outline-color:var(--ink); outline-offset:-3px }
+@media(prefers-reduced-motion:no-preference) {
+  .page:not([hidden]),.sheet[open],.modal.show .modal-box { animation:arrive .24s ease-out both }
+  .case-card { animation:arrive .32s ease-out both }.case-card:nth-child(3n+2){animation-delay:30ms}.case-card:nth-child(3n){animation-delay:60ms}
+  button:not(:disabled):active { transform:translateY(1px) }
+  @keyframes arrive { from{opacity:0;transform:translateY(7px)} to{opacity:1;transform:none} }
+}
+@media(prefers-reduced-motion:reduce) { *,*::before,*::after { transition:none!important; animation:none!important } }

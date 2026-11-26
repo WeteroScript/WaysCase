@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#090b13">
+<meta name="theme-color" content="#16131c">
 <title>WaysCase — коллекция Telegram Gifts</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link rel="stylesheet" href="/app.css">
@@ -14,8 +14,8 @@
 <header class="topbar">
   <h1>WaysCase</h1>
   <div class="balances">
-    <div class="balance"><img class="currency-icon" src="/assets/currency/star.svg" alt="Игровые Stars" title="Игровые Stars"><strong id="starsBalance">—</strong></div>
-    <div class="balance"><img class="currency-icon" src="/assets/currency/ton.svg" alt="Игровые TON" title="Игровые TON"><strong id="tonBalance">—</strong></div>
+    <div class="balance"><span aria-label="Игровые Stars">★</span><strong id="starsBalance">—</strong></div>
+    <div class="balance"><span>TON</span><strong id="tonBalance">—</strong></div>
   </div>
 </header>
 
@@ -94,7 +94,7 @@
   <div class="pick-grid" id="pickGrid"></div>
 </dialog>
 
-<script src="/vendor/lottie-light-5.13.0.min.js"></script>
+<script src="/vendor/lottie-light-canvas-5.13.0.min.js"></script>
 <script src="/exchange.js"></script>
 <script type="module">
 import { upgradePercent } from "/upgrade-odds.mjs";
@@ -130,7 +130,7 @@ import { upgradePercent } from "/upgrade-odds.mjs";
     return url ? '<img src="' + esc(url) + '" alt="' + esc(gift.name) + '">' : '';
   }
   const exchange = mountExchange({state,api,$,esc,giftForId,renderAll,upgradePercent});
-  function canOpen(c) { return state.user && c.totalWeight > 0 && !state.busy && state.user.balances.stars >= c.price; }
+  function canOpen(c) { return state.user && (!c.premium || state.catalogue.market.tradable && Date.now() < state.catalogue.market.expiresAt) && c.totalWeight > 0 && !state.busy && state.user.balances.stars >= c.price; }
   function renderBalances() {
     const b = state.user && state.user.balances ? state.user.balances : null;
     $('starsBalance').textContent = b ? Number(b.stars).toLocaleString('ru-RU') : '—';
@@ -143,13 +143,12 @@ import { upgradePercent } from "/upgrade-odds.mjs";
   function renderCases() {
     const root = $('caseGrid');
     if (!state.catalogue) return;
-    root.innerHTML = state.catalogue.cases.map(c => {
-      return '<article class="case-card"><div class="case-art series-art"><img src="' + esc(c.coverImageUrl) + '" alt=""></div><div class="case-body">' +
-        '<h3>' + esc(c.title) + '</h3><p class="case-meta">' + giftCount(c.gifts.length) + '</p>' +
-        '<div class="case-card-actions"><button class="primary" data-open-case="' + esc(c.id) + '">За ' + c.price + ' ★</button>' +
-        '<button class="case-info" data-info-case="' + esc(c.id) + '" aria-label="Содержимое кейса" title="Содержимое кейса"><svg viewBox="0 0 24 24" aria-hidden="true"><circle cx="12" cy="12" r="9" fill="none" stroke="currentColor" stroke-width="1.8"/><path d="M12 10.7v5.1M12 7.6h.01" fill="none" stroke="currentColor" stroke-width="2.2" stroke-linecap="round"/></svg></button></div></div></article>';
+    root.innerHTML = [false,true].map(premium => {
+      const list = state.catalogue.cases.filter(c => c.premium === premium);
+      return `<section class="editions${premium ? ' premium' : ''}"><h3>${premium ? 'Премиум' : 'Основная серия'} <small>${list.length}</small></h3><div class="edition-grid">` + list.map(c =>
+        `<article class="case-card"><div class="case-heading"><span class="edition-number">№ ${String(c.number).padStart(2,'0')}</span><button class="case-info" data-info-case="${esc(c.id)}" aria-label="Содержимое: ${esc(c.title)}">ⓘ</button></div><h3>${esc(c.title)}</h3><p class="case-meta">${giftCount(c.gifts.length)}</p><button class="edition-price" data-open-case="${esc(c.id)}" ${c.totalWeight ? '' : 'disabled'}>${c.price.toLocaleString('ru-RU')} ★ <span aria-hidden="true">↗</span></button></article>`
+      ).join('') + '</div></section>';
     }).join('');
-
   }
   function renderInventory() {
     const root = $('inventoryRoot');
@@ -203,10 +202,10 @@ import { upgradePercent } from "/upgrade-odds.mjs";
     $('modalGiftList').hidden = !showContents;
     $('modalGiftList').innerHTML = c.gifts.map(g => '<div class="gift-row"><div class="gift-thumb">' + giftImage(g) + '</div><div class="gift-text"><strong>' + esc(g.name) + '</strong><small>' + esc(g.models[0].name) + '</small>' + exchange.price(g.id) + '</div><span class="rarity">' + g.chance.toLocaleString('ru-RU',{maximumFractionDigits:4}) + ' %</span></div>').join('');
     $('openCaseButton').disabled = !canOpen(c);
-    $('openCaseButton').textContent = 'Открыть за ' + c.price + ' ★';
+    $('openCaseButton').textContent = 'Открыть за ' + c.price.toLocaleString('ru-RU') + ' ★';
     $('openCaseButton').hidden = false;
     $('openingStage').classList.remove('show');
-    $('modalNotice').textContent = !state.user ? 'Войди через Telegram.' : !canOpen(c) ? 'Недостаточно внутренних Stars.' : '';
+    $('modalNotice').textContent = !state.user ? 'Войди через Telegram.' : !c.totalWeight ? 'Нет подходящих подарков.' : c.premium && (!state.catalogue.market.tradable || Date.now() >= state.catalogue.market.expiresAt) ? 'Нет свежих цен.' : !canOpen(c) ? 'Недостаточно внутренних Stars.' : '';
     $('caseModal').classList.add('show');
   }
 
@@ -239,9 +238,10 @@ import { upgradePercent } from "/upgrade-odds.mjs";
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
     const target = track.querySelector('[data-target="true"]');
     const distance = target.offsetLeft - (viewport.clientWidth / 2) + (target.offsetWidth / 2);
-    track.style.transition = 'transform 4.8s cubic-bezier(.08,.68,.08,1)';
+    const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
+    track.style.transition = reduced ? 'none' : 'transform 4.8s cubic-bezier(.08,.68,.08,1)';
     track.style.transform = 'translateX(' + (-Math.max(0,distance)) + 'px)';
-    await new Promise(resolve => setTimeout(resolve,5000));
+    await new Promise(resolve => setTimeout(resolve,reduced ? 0 : 5000));
     $('caseModal').classList.remove('show');
     exchange.reward(item, true);
   }
@@ -275,7 +275,7 @@ import { upgradePercent } from "/upgrade-odds.mjs";
       $('modalNotice').textContent = error.message;
     } finally {
       state.busy = false;
-      $('openCaseButton').textContent = 'Открыть за ' + state.activeCase.price + ' ★';
+      $('openCaseButton').textContent = 'Открыть за ' + state.activeCase.price.toLocaleString('ru-RU') + ' ★';
       $('openCaseButton').disabled = !canOpen(state.activeCase);
     }
   }

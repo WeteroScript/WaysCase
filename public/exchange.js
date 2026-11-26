@@ -5,7 +5,7 @@ function mountExchange({state, api, $, esc, giftForId, renderAll, upgradePercent
   const tradable = () => market()?.tradable && Date.now() < market().expiresAt;
   const ownItems = () => state.user?.inventory || [];
   const artwork = gift => gift.models[0].imageUrl;
-  const icon = (unit, value) => `<span class="coin ${unit}"><img src="/assets/currency/${unit}.svg" alt="${unit === 'star' ? 'Игровые Stars':'TON'}">${number.format(value)}</span>`;
+  const icon = (unit, value) => `<span class="coin ${unit}">${number.format(value)} ${unit === 'star' ? '★' : 'TON'}</span>`;
   function price(id) {
     const q = quote(id);
     return q ? `<span class="price-pair">${icon('ton',q.ton)}${icon('star',q.stars)}</span>` : '<span class="price-none">Нет цены</span>';
@@ -18,7 +18,7 @@ function mountExchange({state, api, $, esc, giftForId, renderAll, upgradePercent
   const percent = n => Math.round(n) + ' %';
   const chance = (src,dest) => upgradePercent(quote(src)?.ton, quote(dest)?.ton);
   const diagram = $('chanceWheel'), pointer = $('wheelPointer');
-  let ownId, targetId, mode, upgrading = false, landed = false, prize, animation, selling = false;
+  let ownId, targetId, mode, upgrading = false, prize, animation, selling = false;
   let lastRefresh = Date.now(), refreshing;
   const own = () => ownItems().find(i => i.id === ownId);
   function slot(button,item,art) {
@@ -27,13 +27,12 @@ function mountExchange({state, api, $, esc, giftForId, renderAll, upgradePercent
   function drawSlots() {
     if (upgrading) return;
     const src = own(), dest = targetId && giftForId(targetId);
-    if (!src && !landed) { ownId=null; targetId=null; }
+    if (!src) { ownId=null; targetId=null; }
     if (src && dest && !(quote(dest.id)?.ton > quote(src.giftId)?.ton)) targetId = null;
     const both = src && targetId && quote(src.giftId) && quote(targetId);
     $('pickOwn').disabled = !state.user || !tradable();
     $('pickTarget').disabled = !src || !tradable();
     $('startUpgrade').disabled = !both || !tradable();
-    if (landed) return;
     slot($('pickOwn'), src?.giftName, src?.modelImageUrl || (src && artwork(giftForId(src.giftId))));
     slot($('pickTarget'), targetId && dest?.name, targetId && artwork(dest));
     const n = both ? chance(src.giftId,targetId) : 0;
@@ -65,7 +64,7 @@ function mountExchange({state, api, $, esc, giftForId, renderAll, upgradePercent
     try { await refreshing; } catch { /* Existing snapshot remains dated; server checks its expiry. */ }
   }
   function resetWheel() {
-    landed = false; pointer.style.transform = 'rotate(0deg)';
+    pointer.style.transform = 'rotate(0deg)';
     $('upgradeStatus').textContent = 'При неудаче свой подарок сгорает.';
   }
   function picker(which) {
@@ -104,7 +103,7 @@ function mountExchange({state, api, $, esc, giftForId, renderAll, upgradePercent
       const end = `rotate(${1080+(ticket+.5)*360/1000000}deg)`;
       const spin = pointer.animate([{transform:'rotate(0deg)'},{transform:end}],{duration:matchMedia('(prefers-reduced-motion: reduce)').matches?0:1600,easing:'cubic-bezier(.17,.72,.17,1)'});
       pointer.style.transform=end; await spin.finished;
-      landed=true;
+      pointer.style.transform='rotate(0deg)';
       $('upgradeStatus').textContent=won ? `Успех! ${giftForId(targetId).name} в инвентаре.` : 'Неудача. Исходный подарок списан.';
       ownId=null; targetId=null; renderAll();
     } catch(e) {
@@ -130,7 +129,7 @@ function mountExchange({state, api, $, esc, giftForId, renderAll, upgradePercent
     sellButton(); sheet.showModal();
     $('rewardMotion').classList.toggle('upright-snake',item.animationUrl === '/assets/animations/lunar-snake.tgs');
     if (item.animationUrl && window.lottie && !matchMedia('(prefers-reduced-motion: reduce)').matches) {
-      animation=lottie.loadAnimation({container:$('rewardMotion'),renderer:'svg',loop:true,autoplay:true,path:item.animationUrl});
+      animation=lottie.loadAnimation({container:$('rewardMotion'),renderer:'canvas',loop:true,autoplay:true,path:item.animationUrl});
       animation.addEventListener('DOMLoaded',()=>{if(prize===item) poster.hidden=true;});
     }
   }

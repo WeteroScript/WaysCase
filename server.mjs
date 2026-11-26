@@ -32,7 +32,6 @@ const MIME = {
   '.css': 'text/css; charset=utf-8',
   '.mjs': 'text/javascript; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
-  '.svg': 'image/svg+xml',
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
@@ -413,6 +412,7 @@ async function handleApi(req, res, url) {
         if (prior.caseId !== caseId) return { status: 409, body: { ok: false, error: 'request_id_conflict' } };
         return { status: 200, body: { ok: true, item: presentGift(prior), balances: user.balances, totalOpens: Object.values(user.openCounts).reduce((a,b) => a + b, 0) } };
       }
+      if (chosenCase.premium && (!market.tradable || Date.now() >= market.expiresAt)) return {status:409,body:{ok:false,error:'market_stale',message:'Нет свежих цен для премиум-кейса.'}};
       if (market.version !== body.version || !chosenCase.totalWeight) return {status:409,body:{ok:false,error:'quote_changed',message:'Цены изменились. Проверь цену открытия.'}};
       const previousOpens = Number(user.openCounts[caseId] || 0);
       if (user.balances.stars < chosenCase.price) return { status: 409, body: { ok: false, error: 'insufficient_balance', message: 'Недостаточно внутренних Stars.' } };

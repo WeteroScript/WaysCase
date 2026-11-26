@@ -100,7 +100,7 @@
 <script src="/vendor/lottie-light-canvas-5.13.0.min.js"></script>
 <script src="/exchange.js"></script>
 <script type="module">
-import { upgradePercent } from "/upgrade-odds.mjs";
+import { upgradeThreshold } from "/upgrade-odds.mjs";
 (function(){
   const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
   if (tg) { tg.ready(); tg.expand(); }
@@ -132,7 +132,7 @@ import { upgradePercent } from "/upgrade-odds.mjs";
     const url = model?.imageUrl || gift.models?.[0]?.imageUrl;
     return url ? '<img src="' + esc(url) + '" alt="' + esc(gift.name) + '">' : '';
   }
-  const exchange = mountExchange({state,api,$,esc,giftForId,renderAll,upgradePercent});
+  const exchange = mountExchange({state,api,$,esc,giftForId,renderAll,upgradeThreshold});
   let quantity = 1;
   function canOpen(c) { return state.user && (!c.premium || state.catalogue.market.tradable && Date.now() < state.catalogue.market.expiresAt) && c.totalWeight > 0 && !state.busy && state.user.balances.stars >= c.price * quantity; }
   function renderBalances() {

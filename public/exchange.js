@@ -1,4 +1,4 @@
-function mountExchange({state, api, $, esc, giftForId, renderAll, upgradePercent}) {
+function mountExchange({state, api, $, esc, giftForId, renderAll, upgradeThreshold}) {
   const number = new Intl.NumberFormat('ru-RU',{maximumFractionDigits:4});
   const market = () => state.catalogue?.market;
   const quote = id => market()?.prices[id];
@@ -15,8 +15,8 @@ function mountExchange({state, api, $, esc, giftForId, renderAll, upgradePercent
     const attrs = options.key ? ` type="button" data-key="${esc(options.key)}"` : '';
     return `<${tag} class="market-card"${attrs}>${!options.key ? price(g.id) : ''}<img class="art" ${options.key ? '' : 'loading="lazy"'} src="${esc(options.art || artwork(g))}" alt=""><strong>${esc(g.name)}</strong><small>${esc(options.model || g.models[0].name)}</small>${options.key ? price(g.id) : ''}${options.odds == null ? '' : `<small class="chance">Шанс ${percent(options.odds)}</small>`}</${tag}>`;
   }
-  const percent = n => Math.round(n) + ' %';
-  const chance = (src,dest) => upgradePercent(quote(src)?.ton, quote(dest)?.ton);
+  const percent = n => number.format(n) + ' %';
+  const chance = (src,dest) => upgradeThreshold(quote(src)?.ton, quote(dest)?.ton) / 10000;
   const diagram = $('chanceWheel'), pointer = $('wheelPointer');
   let ownId, targetId, mode, upgrading = false, prize, animation, selling = false;
   let lastRefresh = Date.now(), refreshing;
@@ -28,7 +28,7 @@ function mountExchange({state, api, $, esc, giftForId, renderAll, upgradePercent
     if (upgrading) return;
     const src = own(), dest = targetId && giftForId(targetId);
     if (!src) { ownId=null; targetId=null; }
-    if (src && dest && !(quote(dest.id)?.ton > quote(src.giftId)?.ton)) targetId = null;
+    if (src && targetId && !chance(src.giftId,targetId)) targetId = null;
     const both = src && targetId && quote(src.giftId) && quote(targetId);
     $('pickOwn').disabled = !state.user || !tradable();
     $('pickTarget').disabled = !src || !tradable();
@@ -76,8 +76,8 @@ function mountExchange({state, api, $, esc, giftForId, renderAll, upgradePercent
     $('pickHeading').textContent = which === 'own' ? 'Выберите свой NFT' : 'Выберите желаемый NFT';
     const src = own();
     const cards = which === 'own' ? ownItems().filter(i=>quote(i.giftId)).map(i=>tile(giftForId(i.giftId),{key:i.id,art:i.modelImageUrl,model:i.modelName})) :
-      state.catalogue.gifts.filter(g=>src && quote(g.id)?.ton > quote(src.giftId)?.ton).sort((a,b)=>quote(a.id).ton-quote(b.id).ton).map(g=>tile(g,{key:g.id,odds:chance(src.giftId,g.id)}));
-    $('pickGrid').innerHTML = cards.join('') || `<p class="status">${which==='own'?'Нет подарков с рыночной ценой.':'Нет подарков дороже выбранного.'}</p>`;
+      state.catalogue.gifts.filter(g=>src && chance(src.giftId,g.id) > 0).sort((a,b)=>quote(a.id).ton-quote(b.id).ton).map(g=>tile(g,{key:g.id,odds:chance(src.giftId,g.id)}));
+    $('pickGrid').innerHTML = cards.join('') || `<p class="status">${which==='own'?'Нет подарков с рыночной ценой.':'Нет целей с шансом до 75 % включительно.'}</p>`;
     $('pickSheet').showModal();
   }
   $('pickOwn').onclick = ()=>picker('own'); $('pickTarget').onclick = ()=>picker('target');

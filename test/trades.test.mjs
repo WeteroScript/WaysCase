@@ -28,7 +28,7 @@ test('sale credits the quoted game Stars once, even on retry, and never touches 
   assert.throws(()=>trade(u,'upgrade',request,fresh));
 });
 test('upgrade consumes the input once and lands on the correct side of the displayed sector',()=>{
-  const edge=750000;
+  const edge=Math.floor(1e6*fresh.prices['toy-bear'].ton/fresh.prices['plush-pepe'].ton);
   for(const ticket of [edge-1,edge]) {
     const u=user(); const result=trade(u,'upgrade',request,fresh,()=>ticket);
     assert.equal(result.threshold,edge); assert.equal(result.won,ticket<edge);
@@ -53,12 +53,19 @@ test('all catalogue models have a local animated Telegram sticker',()=>{
   }
 });
 
-test('displayed whole percent is the settlement boundary, including decimal TON quotes',()=>{
-  for(const [from,to,percent] of [[1,9999,75],[7,10,75],[.29,.4,75],[.75,1,75],[.28,.35,80],[.999,1,99]]){
+test('eligible targets use the price ratio down to individual tickets, including exactly 75%',()=>{
+  for(const [from,to,edge] of [[167,7500,22266],[1,9999,100],[7,10,700000],[.29,.4,725000],[.75,1,750000]]){
     const prices={'toy-bear':{ton:from},'plush-pepe':{ton:to}};
-    for(const ticket of [percent*10000-1,percent*10000]){
+    for(const ticket of [edge-1,edge]){
       const r=trade(user(),'upgrade',request,{...fresh,prices},()=>ticket);
-      assert.equal(r.threshold,percent*10000);assert.equal(r.won,ticket<r.threshold);
+      assert.equal(r.threshold,edge);assert.equal(r.won,ticket<edge);
     }
+  }
+});
+test('targets even slightly above 75% cannot roll or consume an item',()=>{
+  for (const ton of [.750000001,.8,.999]) {
+    const prices={'toy-bear':{ton},'plush-pepe':{ton:1}}, u=user();
+    assert.throws(()=>trade(u,'upgrade',request,{...fresh,prices},()=>assert.fail('rolled')), /75 %/);
+    assert.deepEqual(u,user());
   }
 });

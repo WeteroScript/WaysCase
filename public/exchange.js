@@ -35,6 +35,8 @@ function mountExchange({state, api, $, esc, giftForId, renderAll, upgradePercent
     $('startUpgrade').disabled = !both || !tradable();
     slot($('pickOwn'), src?.giftName, src?.modelImageUrl || (src && artwork(giftForId(src.giftId))));
     slot($('pickTarget'), targetId && dest?.name, targetId && artwork(dest));
+    $('ownPrice').innerHTML = src ? price(src.giftId) : '';
+    $('targetPrice').innerHTML = targetId ? price(targetId) : '';
     const n = both ? chance(src.giftId,targetId) : 0;
     diagram.style.setProperty('--arc',`${n*3.6}deg`);
     $('chanceLabel').textContent = both ? percent(n) : '—';
@@ -54,6 +56,7 @@ function mountExchange({state, api, $, esc, giftForId, renderAll, upgradePercent
     $('marketCaption').textContent = 'Минимум по коллекции, включая аукционы. Stars — игровой эквивалент.' + (tradable() ? '' : ' Архивные цены: продажа и апгрейд недоступны.');
     renderGallery();
     drawSlots();
+    if (batchSheet.open) renderBatch();
   }
   async function refreshIfDue(force = false) {
     if (!force && Date.now()-lastRefresh < 300000) return;
@@ -151,5 +154,28 @@ function mountExchange({state, api, $, esc, giftForId, renderAll, upgradePercent
     } catch(e) { $('rewardStatus').textContent=e.message; await refreshIfDue(true); }
     finally { selling=false; $('keepGift').disabled=false; sellButton(); }
   };
-  return {render,price,reward,refreshIfDue};
+  const batchSheet = $('batchSheet');
+  let batchItems = [];
+  function renderBatch() {
+    const owned = new Set(ownItems().map(i => i.id));
+    $('batchGrid').innerHTML = batchItems.map(item => {
+      const sold = !owned.has(item.id);
+      return `<button class="market-card" data-prize="${esc(item.id)}" ${sold?'disabled':''}>
+        <img class="art" src="${esc(item.modelImageUrl)}" alt=""><strong>${esc(item.giftName)}</strong>
+        <small>${esc(item.modelName)}</small>${sold?'Продано':price(item.giftId)}</button>`;
+    }).join('');
+  }
+  function batch(items) {
+    batchItems = items;
+    $('batchHeading').textContent = 'Ваши подарки · ' + items.length;
+    renderBatch(); batchSheet.showModal();
+  }
+  $('batchGrid').onclick = event => {
+    const id = event.target.closest('[data-prize]')?.dataset.prize;
+    const item = batchItems.find(i => i.id === id);
+    if (item && ownItems().some(i => i.id === id)) reward(item,true);
+  };
+  $('batchDone').onclick = () => batchSheet.close();
+  batchSheet.onclose = () => { batchItems = []; $('batchGrid').replaceChildren(); };
+  return {render,price,reward,batch,refreshIfDue};
 }

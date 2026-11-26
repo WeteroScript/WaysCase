@@ -399,6 +399,8 @@ async function handleApi(req, res, url) {
     const body = await readJsonBody(req);
     const caseId = String(body?.caseId || '');
     const requestId = body?.requestId;
+    const quantity = body?.quantity === undefined ? 1 : body.quantity;
+    if (!Number.isInteger(quantity) || quantity < 1 || quantity > 5) return json(res, 400, {ok:false,error:'invalid_quantity',message:'Выбери от 1 до 5 кейсов.'});
     if (typeof requestId !== 'string' || !/^[a-f0-9-]{36}$/i.test(requestId)) return json(res, 400, {ok:false, error:'invalid_request_id'});
     const market = await getMarket();
     const chosenCase = buildCases(market).find(item => item.id === caseId);
@@ -406,42 +408,33 @@ async function handleApi(req, res, url) {
 
     const outcome = await mutateDatabase(db => {
       const user = ensureUser(db, identity);
-      const prior = user.inventory.find(i => i.requestId === requestId);
-      if (prior) {
-        if (prior.spent) return {status:409,body:{ok:false,error:"gift_used",message:"Подарок уже использован."}};
-        if (prior.caseId !== caseId) return { status: 409, body: { ok: false, error: 'request_id_conflict' } };
-        return { status: 200, body: { ok: true, item: presentGift(prior), balances: user.balances, totalOpens: Object.values(user.openCounts).reduce((a,b) => a + b, 0) } };
+      function receipt(rows) {
+        const items = rows.map(presentGift);
+        return {status:200,body:{ok:true,items,item:items[0],balances:user.balances,
+          totalOpens:Object.values(user.openCounts).reduce((sum,n)=>sum+n,0),
+          chance:rows[0].drawChance}};
+      }
+      const prior = user.inventory.filter(i => i.requestId === requestId);
+      if (prior.length) {
+        if (prior.length !== quantity || prior[0].caseId !== caseId) return {status:409,body:{ok:false,error:'request_id_conflict'}};
+        if (prior.some(i => i.spent)) return {status:409,body:{ok:false,error:'gift_used',message:'Подарок уже использован.'}};
+        return receipt(prior);
       }
       if (chosenCase.premium && (!market.tradable || Date.now() >= market.expiresAt)) return {status:409,body:{ok:false,error:'market_stale',message:'Нет свежих цен для премиум-кейса.'}};
       if (market.version !== body.version || !chosenCase.totalWeight) return {status:409,body:{ok:false,error:'quote_changed',message:'Цены изменились. Проверь цену открытия.'}};
       const previousOpens = Number(user.openCounts[caseId] || 0);
-      if (user.balances.stars < chosenCase.price) return { status: 409, body: { ok: false, error: 'insufficient_balance', message: 'Недостаточно внутренних Stars.' } };
-      user.balances.stars -= chosenCase.price;
-      const gift = draw(chosenCase);
-      const model = gift.models[0];
-      const item = {
-        id: randomUUID(), requestId,
-        giftId: gift.id,
-        giftName: gift.name,
-        modelName: model?.name || null,
-        rarity: model?.rarity || null,
-        modelImageUrl: model?.imageUrl || null,
-        caseId: chosenCase.id,
-        caseName: chosenCase.title,
-        receivedAt: new Date().toISOString(),
-      };
-      user.inventory.push(item);
-      user.openCounts[caseId] = previousOpens + 1;
-      return {
-        status: 200,
-        body: {
-          ok: true,
-          item: presentGift(item),
-          balances: user.balances,
-          totalOpens: Object.values(user.openCounts).reduce((sum, count) => sum + Number(count || 0), 0),
-          chance: gift.chance,
-        },
-      };
+      const total = chosenCase.price * quantity;
+      if (user.balances.stars < total) return { status: 409, body: { ok: false, error: 'insufficient_balance', message: 'Недостаточно внутренних Stars.' } };
+      const items = Array.from({length:quantity}, () => {
+        const gift = draw(chosenCase), model = gift.models[0];
+        return {id:randomUUID(), requestId, drawChance:gift.chance, giftId:gift.id, giftName:gift.name,
+          modelName:model?.name || null, rarity:model?.rarity || null, modelImageUrl:model?.imageUrl || null,
+          caseId, caseName:chosenCase.title, receivedAt:new Date().toISOString()};
+      });
+      user.balances.stars -= total;
+      user.inventory.push(...items);
+      user.openCounts[caseId] = previousOpens + quantity;
+      return receipt(items);
     });
     return json(res, outcome.status, outcome.body);
   }

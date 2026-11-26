@@ -43,9 +43,9 @@
   <div class="section-head"><h2>Апгрейд</h2></div>
   <div class="panel upgrade-board">
     <div class="upgrade-slots">
-      <div class="upgrade-slot"><label for="pickOwn">Выберите свой NFT</label><button id="pickOwn">+</button></div>
+      <div class="upgrade-slot"><label for="pickOwn">Выберите свой NFT</label><button id="pickOwn" aria-describedby="ownPrice">+</button><div class="slot-price" id="ownPrice"></div></div>
       <div class="wheel" id="chanceWheel"><strong id="chanceLabel">—</strong><i id="wheelPointer" aria-hidden="true"></i></div>
-      <div class="upgrade-slot"><label for="pickTarget">Выберите желаемый NFT</label><button id="pickTarget" disabled>+</button></div>
+      <div class="upgrade-slot"><label for="pickTarget">Выберите желаемый NFT</label><button id="pickTarget" aria-describedby="targetPrice" disabled>+</button><div class="slot-price" id="targetPrice"></div></div>
     </div>
     <p class="trade-status" id="upgradeStatus" role="status">При неудаче свой подарок сгорает.</p>
     <button class="primary full" id="startUpgrade" disabled>Старт</button>
@@ -68,11 +68,9 @@
     <div class="modal-head"><div><h2 id="modalTitle">Кейс</h2><p id="modalSubtitle"></p></div><button class="close" id="modalClose" aria-label="Закрыть">×</button></div>
     <p class="status" id="modalPreview"></p>
     <div class="gift-list" id="modalGiftList"></div>
+    <fieldset id="caseQuantity"><legend>Количество кейсов</legend><div class="quantities"></div></fieldset>
     <div class="modal-actions"><button class="primary" id="openCaseButton">Открыть</button></div>
-    <div class="opening" id="openingStage">
-
-      <div class="roulette-window" id="rouletteWindow"><div class="roulette-track" id="rouletteTrack"></div></div>
-    </div>
+    <div class="opening" id="openingStage"></div>
     <div class="notice" id="modalNotice"></div>
   </div>
 </div>
@@ -82,6 +80,11 @@
   <p id="authMessage">Чтобы сохранить подарки, запусти приложение из чата с ботом.</p>
 </div>
 
+<dialog class="sheet" id="batchSheet" aria-labelledby="batchHeading">
+  <div class="sheet-head"><h2 id="batchHeading">Выигрыш</h2></div>
+  <div class="pick-grid" id="batchGrid"></div>
+  <button class="primary full" id="batchDone">Готово</button>
+</dialog>
 <dialog class="sheet reward" id="rewardSheet" aria-labelledby="rewardHeading">
   <div class="sheet-head"><h2 id="rewardHeading">Ваш подарок</h2></div>
   <div class="reward-art"><img id="rewardPoster" alt=""><div class="reward-motion" id="rewardMotion"></div></div>
@@ -130,7 +133,8 @@ import { upgradePercent } from "/upgrade-odds.mjs";
     return url ? '<img src="' + esc(url) + '" alt="' + esc(gift.name) + '">' : '';
   }
   const exchange = mountExchange({state,api,$,esc,giftForId,renderAll,upgradePercent});
-  function canOpen(c) { return state.user && (!c.premium || state.catalogue.market.tradable && Date.now() < state.catalogue.market.expiresAt) && c.totalWeight > 0 && !state.busy && state.user.balances.stars >= c.price; }
+  let quantity = 1;
+  function canOpen(c) { return state.user && (!c.premium || state.catalogue.market.tradable && Date.now() < state.catalogue.market.expiresAt) && c.totalWeight > 0 && !state.busy && state.user.balances.stars >= c.price * quantity; }
   function renderBalances() {
     const b = state.user && state.user.balances ? state.user.balances : null;
     $('starsBalance').textContent = b ? Number(b.stars).toLocaleString('ru-RU') : '—';
@@ -191,21 +195,40 @@ import { upgradePercent } from "/upgrade-odds.mjs";
     return state.catalogue.cases.find(c => c.id === id);
   }
 
+  const quantityRoot = $('caseQuantity');
+  quantityRoot.querySelector('.quantities').innerHTML = [1,2,3,4,5].map(n =>
+    `<label><input type="radio" name="quantity" value="${n}"><span>×${n}</span></label>`).join('');
+  function updateOpenButton() {
+    const c = state.activeCase;
+    quantityRoot.disabled = state.busy;
+    quantityRoot.querySelector(`input[value="${quantity}"]`).checked = true;
+    $('openCaseButton').disabled = !canOpen(c);
+    $('openCaseButton').textContent = 'Открыть за ' + (c.price * quantity).toLocaleString('ru-RU') + ' ★';
+  }
+  function availability(c) {
+    if (!state.user) return 'Войди через Telegram.';
+    if (!c.totalWeight) return 'Нет подходящих подарков.';
+    if (c.premium && (!state.catalogue.market.tradable || Date.now() >= state.catalogue.market.expiresAt)) return 'Нет свежих цен.';
+    return state.user.balances.stars < quantity*c.price ? 'Недостаточно внутренних Stars.' : '';
+  }
+  quantityRoot.onchange = event => {
+    quantity = Number(event.target.value);
+    updateOpenButton(); $('modalNotice').textContent = availability(state.activeCase);
+  };
   function openModal(caseId, showContents = false) {
     const c = getCase(caseId);
     if (!c || state.busy) return;
     state.activeCase = c;
+    quantity = 1;
     state.caseVersion = state.catalogue.market.version;
     $('modalTitle').textContent = c.title;
     $('modalSubtitle').textContent = giftCount(c.gifts.length) + ' · шанс окупиться ' + c.breakEvenPercent.toLocaleString('ru-RU',{maximumFractionDigits:1}) + ' %';
     $('modalPreview').textContent = showContents ? 'Минимум коллекции на Fragment · ' + state.catalogue.market.date : '';
     $('modalGiftList').hidden = !showContents;
     $('modalGiftList').innerHTML = c.gifts.map(g => '<div class="gift-row"><div class="gift-thumb">' + giftImage(g) + '</div><div class="gift-text"><strong>' + esc(g.name) + '</strong><small>' + esc(g.models[0].name) + '</small>' + exchange.price(g.id) + '</div><span class="rarity">' + g.chance.toLocaleString('ru-RU',{maximumFractionDigits:4}) + ' %</span></div>').join('');
-    $('openCaseButton').disabled = !canOpen(c);
-    $('openCaseButton').textContent = 'Открыть за ' + c.price.toLocaleString('ru-RU') + ' ★';
-    $('openCaseButton').hidden = false;
+    updateOpenButton();
     $('openingStage').classList.remove('show');
-    $('modalNotice').textContent = !state.user ? 'Войди через Telegram.' : !c.totalWeight ? 'Нет подходящих подарков.' : c.premium && (!state.catalogue.market.tradable || Date.now() >= state.catalogue.market.expiresAt) ? 'Нет свежих цен.' : !canOpen(c) ? 'Недостаточно внутренних Stars.' : '';
+    $('modalNotice').textContent = availability(c);
     $('caseModal').classList.add('show');
   }
 
@@ -214,58 +237,55 @@ import { upgradePercent } from "/upgrade-odds.mjs";
       exchange.price(gift.id) + giftImage(gift, model) + '<small>' + esc(model ? model.telegramName : gift.name) + '</small></div>';
   }
 
-  async function animateOpening(c, item) {
+  async function animateOpening(c, items) {
     const stage = $('openingStage');
-    const track = $('rouletteTrack');
-    const viewport = $('rouletteWindow');
+    stage.classList.toggle('multi',items.length > 1);
+    stage.innerHTML = items.map((item,row) => {
+      const stop = 20 + row;
+      const cards = Array.from({length:stop+7},(_,i) => {
+        const gift = i===stop ? giftForId(item.giftId) : c.gifts[(i+3*row)%c.gifts.length];
+        return rouletteCard(gift,gift.models[0],i===stop);
+      });
+      return `<div class="roulette-window"><div class="roulette-track">${cards.join('')}</div></div>`;
+    }).join('');
+    quantityRoot.hidden = true; $('openCaseButton').hidden = true;
     stage.classList.add('show');
-    const targetGift = giftForId(item.giftId) || {id:item.giftId,name:item.giftName,emoji:item.giftEmoji,models:[]};
-    const targetModel = item.modelImageUrl ? {name:item.modelName,telegramName:item.modelName,imageUrl:item.modelImageUrl,rarity:item.rarity} : null;
-    const targetIndex = 32;
-    const cards = [];
-    for (let i=0;i<40;i++) {
-      const gift = c.gifts[i % c.gifts.length];
-      if (i === targetIndex) cards.push(rouletteCard(targetGift,targetModel,true));
-      else {
-        const models = gift.models || [];
-        cards.push(rouletteCard(gift,models.length ? models[(i % models.length)] : null,false));
-      }
-    }
-    track.innerHTML = cards.join('');
-
-    track.style.transition = 'none';
-    track.style.transform = 'translateX(0px)';
     await new Promise(resolve => requestAnimationFrame(() => requestAnimationFrame(resolve)));
-    const target = track.querySelector('[data-target="true"]');
-    const distance = target.offsetLeft - (viewport.clientWidth / 2) + (target.offsetWidth / 2);
     const reduced = matchMedia('(prefers-reduced-motion: reduce)').matches;
-    track.style.transition = reduced ? 'none' : 'transform 4.8s cubic-bezier(.08,.68,.08,1)';
-    track.style.transform = 'translateX(' + (-Math.max(0,distance)) + 'px)';
-    await new Promise(resolve => setTimeout(resolve,reduced ? 0 : 5000));
+    const duration = reduced ? 0 : items.length > 1 ? 3200 : 4800;
+    for (const track of stage.querySelectorAll('.roulette-track')) {
+      const target = track.querySelector('[data-target]');
+      const distance = target.offsetLeft - (track.parentElement.clientWidth-target.offsetWidth)/2;
+      track.style.transition = `transform ${duration}ms cubic-bezier(.08,.68,.08,1)`;
+      track.style.transform = `translateX(${-distance}px)`;
+    }
+    await new Promise(resolve => setTimeout(resolve,duration));
     $('caseModal').classList.remove('show');
-    exchange.reward(item, true);
+    stage.replaceChildren();
+    if (items.length===1) exchange.reward(items[0],true); else exchange.batch(items);
   }
 
   async function openCase(caseId) {
     const c = getCase(caseId);
     if (!c || !canOpen(c)) return;
     state.busy = true;
+    quantityRoot.disabled = true;
+    const key = caseId + ":" + quantity;
     $('openCaseButton').disabled = true;
     $('openCaseButton').textContent = 'Открываем…';
     $('modalNotice').textContent = '';
     try {
-      const requestId = openingRequests.get(caseId) || crypto.randomUUID();
-      openingRequests.set(caseId, requestId);
-      const response = await api('/api/open',{method:'POST',body:JSON.stringify({caseId, requestId, version:state.caseVersion})});
-      openingRequests.delete(caseId);
+      const requestId = openingRequests.get(key) || crypto.randomUUID();
+      openingRequests.set(key, requestId);
+      const response = await api('/api/open',{method:'POST',body:JSON.stringify({caseId, quantity, requestId, version:state.caseVersion})});
+      openingRequests.delete(key);
       state.user.balances = response.balances;
-      if (!state.user.inventory.some(i => i.id === response.item.id)) state.user.inventory.unshift(response.item);
+      for (const item of response.items) if (!state.user.inventory.some(i => i.id === item.id)) state.user.inventory.unshift(item);
       state.user.totalOpens = response.totalOpens;
       renderAll();
       $('modalGiftList').hidden = true;
       $('modalNotice').textContent = '';
-      await animateOpening(c,response.item);
-      if (state.user.balances.stars < c.price) $('modalNotice').textContent = 'Недостаточно внутренних Stars.';
+      await animateOpening(c,response.items);
     } catch (error) {
       if (error.code === 'quote_changed') {
         await exchange.refreshIfDue(true);
@@ -275,8 +295,8 @@ import { upgradePercent } from "/upgrade-odds.mjs";
       $('modalNotice').textContent = error.message;
     } finally {
       state.busy = false;
-      $('openCaseButton').textContent = 'Открыть за ' + state.activeCase.price.toLocaleString('ru-RU') + ' ★';
-      $('openCaseButton').disabled = !canOpen(state.activeCase);
+      quantityRoot.hidden = false; $('openCaseButton').hidden = false;
+      updateOpenButton();
     }
   }
 

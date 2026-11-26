@@ -50,4 +50,24 @@ test('authenticated concurrent openings debit once; insufficient balance never a
   assert.equal(sold.user.balances.stars,10000-cost+catalogue.market.prices[a.item.giftId].stars);
   assert.equal((await post('/api/open',args)).status,409);
   assert.equal((await post('/api/upgrade',{...sale,targetId:'plush-pepe'})).status,409);
+  const profile = async () => (await (await fetch(origin+'/api/me',{headers:{authorization:signedHeader()}})).json()).user;
+  const before = await profile();
+  const batch = {...args,requestId:randomUUID(),quantity:5};
+  for (const quantity of [null,0,6,1.5,'5']) assert.equal((await post('/api/open',{...batch,quantity})).status,400);
+  const affordableOnce = catalogue.cases.find(c => !c.premium && c.price <= before.balances.stars && c.price*5 > before.balances.stars);
+  const denied = await post('/api/open',{...batch,caseId:affordableOnce.id});
+  assert.equal(denied.status,409);
+  assert.equal((await denied.json()).error,'insufficient_balance');
+  assert.deepEqual(await profile(),before);
+  const [first, retry] = await Promise.all([post('/api/open',batch),post('/api/open',batch)].map(async p=>(await p).json()));
+  assert.deepEqual(first,retry);
+  assert.equal(new Set(first.items.map(i=>i.id)).size,5);
+  assert.equal(first.balances.stars,before.balances.stars-cost*5);
+  assert.equal(first.totalOpens,before.totalOpens+5);
+  assert.equal((await profile()).inventory.length,5);
+  assert.equal((await post('/api/open',{...batch,quantity:1})).status,409);
+  assert.equal((await post('/api/sell',{itemId:first.items[2].id,version:batch.version})).status,200);
+  assert.equal((await post('/api/open',batch)).status,409);
+  assert.equal((await profile()).inventory.length,4);
+
 });

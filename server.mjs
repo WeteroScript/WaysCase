@@ -35,6 +35,7 @@ const MIME = {
   '.png': 'image/png',
   '.jpg': 'image/jpeg',
   '.jpeg': 'image/jpeg',
+  '.woff2': 'font/woff2',
   '.webp': 'image/webp',
   '.tgs': 'application/json',
   '.ico': 'image/x-icon',

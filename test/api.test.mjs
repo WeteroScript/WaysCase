@@ -28,6 +28,13 @@ test('authenticated concurrent openings debit once; insufficient balance never a
   for await (const line of createInterface({input:child.stdout})) {
     if (line.includes('server listening')) { origin='http://127.0.0.1:'+line.match(/port=(\d+)/)[1]; break; }
   }
+  for (const family of ['inter','source-serif-4']) {
+    for (const subset of ['latin','cyrillic']) {
+      const font = await fetch(`${origin}/assets/fonts/${family}/${family}-${subset}-wght-normal.woff2`);
+      assert.equal(font.headers.get('content-type'),'font/woff2');
+      assert.equal(Buffer.from(await font.arrayBuffer()).toString('ascii',0,4),'wOF2');
+    }
+  }
   const post = (path,body) => fetch(origin+path,{method:'POST',headers:{authorization:signedHeader(),'content-type':'application/json'},body:JSON.stringify(body)});
   const catalogue = await (await fetch(origin+'/api/catalog')).json();
   const cost = catalogue.cases[0].price;

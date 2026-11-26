@@ -50,7 +50,12 @@
 }
 * { box-sizing: border-box }
 [hidden], .status:empty, .notice:empty { display: none !important }
-body { margin: 0 }
+body { margin: 0; isolation: isolate }
+body::before {
+  content: ''; position: fixed; inset: 0; pointer-events: none; z-index: -1;
+  background: radial-gradient(ellipse at 6% 6%, rgb(50 115 239 / 13%), transparent 52%),
+              radial-gradient(ellipse at 98% 84%, rgb(33 163 224 / 8%), transparent 46%);
+}
 button, input { font: inherit }
 button { cursor: pointer; color: inherit }
 button:disabled { cursor: default; opacity: .5 }
@@ -121,8 +126,7 @@ h1 { font-size: clamp(28px,5vw,40px); letter-spacing: -.04em }
 .nav { margin-bottom: 22px; border: 0; background: var(--surface); padding: 4px; border-radius: 10px; gap: 2px }
 .nav button { border: 0; border-radius: 7px; transition: background-color .18s,color .18s }
 .nav button.active { background: var(--accent); color: white }
-.editions { margin: 16px 0 30px; --paper: #e1eaf6; --ink: #16243d; --pencil: #405270 }
-.editions.premium { --paper: #233653; --ink: #f1f6ff; --pencil: #c2d1e7 }
+.editions { margin: 16px 0 30px; --paper: #1c385f; --ink: #f1f6ff; --pencil: #c2d6ef }
 .editions > h3 { display: flex; gap: 8px; align-items: center; margin: 0 0 12px; font-size: 15px }
 .editions > h3 small { font: 12px var(--font-ui); font-variant-numeric:tabular-nums; color:var(--muted) }
 .edition-grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill,minmax(min(188px,45%),1fr)) }

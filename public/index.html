@@ -3,7 +3,7 @@
 <head>
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width,initial-scale=1,viewport-fit=cover">
-<meta name="theme-color" content="#16131c">
+<meta name="theme-color" content="#101722">
 <title>WaysCase — коллекция Telegram Gifts</title>
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link rel="stylesheet" href="/app.css">
@@ -150,7 +150,13 @@ import { upgradePercent } from "/upgrade-odds.mjs";
     root.innerHTML = [false,true].map(premium => {
       const list = state.catalogue.cases.filter(c => c.premium === premium);
       return `<section class="editions${premium ? ' premium' : ''}"><h3>${premium ? 'Премиум' : 'Основная серия'} <small>${list.length}</small></h3><div class="edition-grid">` + list.map(c =>
-        `<article class="case-card"><div class="case-heading"><span class="edition-number">№ ${String(c.number).padStart(2,'0')}</span><button class="case-info" data-info-case="${esc(c.id)}" aria-label="Содержимое: ${esc(c.title)}">ⓘ</button></div><h3>${esc(c.title)}</h3><p class="case-meta">${giftCount(c.gifts.length)}</p><button class="edition-price" data-open-case="${esc(c.id)}" ${c.totalWeight ? '' : 'disabled'}>${c.price.toLocaleString('ru-RU')} ★ <span aria-hidden="true">↗</span></button></article>`
+        `<article class="case-card">
+          <span class="edition-number">№ ${String(c.number).padStart(2,'0')}</span>
+          <h3>${esc(c.title)}</h3><p class="case-meta">${giftCount(c.gifts.length)}</p>
+          <div class="case-card-actions">
+            <button class="primary" data-open-case="${esc(c.id)}" ${c.totalWeight ? '' : 'disabled'}>За ${c.price.toLocaleString('ru-RU')} ★</button>
+            <button class="case-info" data-info-case="${esc(c.id)}" aria-label="Содержимое: ${esc(c.title)}" title="Содержимое кейса">ⓘ</button>
+          </div></article>`
       ).join('') + '</div></section>';
     }).join('');
   }

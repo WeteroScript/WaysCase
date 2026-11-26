@@ -3,7 +3,6 @@ import logging
 import os
 import sys
 from collections.abc import Awaitable, Callable
-from html import escape
 from typing import Any
 from urllib.parse import urlparse
 
@@ -59,11 +58,6 @@ async def start(message: Message) -> None:
     user_id = message.from_user.id if message.from_user else "unknown"
     log.info("Handling /start: user_id=%s message_id=%s", user_id, message.message_id)
 
-    first_name = escape(
-        message.from_user.first_name
-        if message.from_user and message.from_user.first_name
-        else "коллекционер"
-    )
     webapp_url = os.environ.get("WEBAPP_URL", DEFAULT_WEBAPP_URL).strip() or DEFAULT_WEBAPP_URL
 
     keyboard = InlineKeyboardMarkup(
@@ -77,10 +71,7 @@ async def start(message: Message) -> None:
         ]
     )
     await message.answer(
-        f"Привет, <b>{first_name}</b>! ✨\n\n"
-        "Добро пожаловать в <b>WaysCase</b> — каталог коллекционных "
-        "Telegram-подарков и визуальных моделей.\n\n"
-        "Нажми кнопку ниже, чтобы открыть Mini App.",
+        "Кейсы и подарки за игровые Stars.",
         reply_markup=keyboard,
     )
     log.info("Successfully replied to /start: user_id=%s", user_id)

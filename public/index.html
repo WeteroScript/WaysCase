@@ -158,12 +158,15 @@ import { upgradeThreshold } from "/upgrade-odds.mjs";
       const list = state.catalogue.cases.filter(c => c.premium === premium);
       return `<section class="editions${premium ? ' premium' : ''}"><h3>${premium ? 'Премиум' : 'Основная серия'} <small>${list.length}</small></h3><div class="edition-grid">` + list.map(c =>
         `<article class="case-card">
-          <span class="edition-number">№ ${String(c.number).padStart(2,'0')}</span>
-          <h3>${esc(c.title)}</h3><p class="case-meta">${giftCount(c.gifts.length)}</p>
-          <div class="case-card-actions">
-            <button class="primary" data-open-case="${esc(c.id)}" ${c.totalWeight ? '' : 'disabled'}><span>Открыть</span><strong>${c.price.toLocaleString('ru-RU')} <b>★</b></strong></button>
-            <button class="case-info" data-info-case="${esc(c.id)}" aria-label="Содержимое: ${esc(c.title)}" title="Содержимое кейса">ⓘ</button>
-          </div></article>`
+          <span class="edition-number" aria-hidden="true">${String(c.number).padStart(2,'0')}</span>
+          <div class="case-description">
+            <h4>${esc(c.title)}</h4>
+            <button class="case-details" data-info-case="${esc(c.id)}" aria-label="Содержимое: ${esc(c.title)}" title="Содержимое кейса">${giftCount(c.gifts.length)} <span aria-hidden="true">›</span></button>
+          </div>
+          <button class="case-open" data-open-case="${esc(c.id)}" ${c.totalWeight ? '' : 'disabled'}>
+            <span>Открыть за</span><strong>${c.price.toLocaleString('ru-RU')} ★</strong>
+          </button>
+        </article>`
       ).join('') + '</div></section>';
     }).join('');
   }

@@ -72,22 +72,19 @@ h2 { font-size: 21px }
 .nav button { padding: 10px 8px; background: none; border: 0; border-bottom: 2px solid transparent; color: var(--muted); font-size: 13px }
 .nav button.active { border-color: var(--accent); color: #fff }
 .section-head, .market-head { margin-bottom: 12px }
-.primary, .secondary, .case-info, .close { min-height: 42px; padding: 8px 12px; border: 0; border-radius: 8px; font-size: 14px; font-weight: 600 }
+.primary, .secondary, .close { min-height: 42px; padding: 8px 12px; border: 0; border-radius: 8px; font-size: 14px; font-weight: 600 }
 .primary { background: var(--accent); color: white }
-.secondary, .case-info, .close { background: #2c3b52 }
-.close, .case-info { width: 42px; padding: 0; display: grid; place-items: center }
+.secondary, .close { background: #2c3b52 }
+.close { width: 42px; padding: 0; display: grid; place-items: center }
 .close { font-size: 22px }
 .full { width: 100% }
 .status, .notice, .fine-print, .profile-head p, .modal-head p { color: var(--muted); font-size: 13px }
 .notice:not(:empty), .panel p { margin-top: 10px }
 .error { color: #ffb4af }
 .inventory-grid { display: grid; grid-template-columns: repeat(auto-fit,minmax(min(206px,45%),1fr)); gap: 14px }
-.case-card, .inventory-item, .panel, .gate { min-width: 0; border: 1px solid var(--line); border-radius: 12px; background: var(--surface) }
-.case-card { overflow: hidden }
-.case-body, .inventory-item { padding: 12px }
-.case-body h3 { font-size: 17px }
-.case-meta, .inventory-item p { font-size: 12px; color: var(--muted) }
-.case-card-actions { display: grid; grid-template-columns: 1fr auto; gap: 6px; margin-top: 12px }
+.inventory-item, .panel, .gate { min-width: 0; border: 1px solid var(--line); border-radius: 12px; background: var(--surface) }
+.inventory-item { padding: 12px }
+.inventory-item p { font-size: 12px; color: var(--muted) }
 .inventory-image { height: 116px; text-align: center }
 .inventory-image img { width: 100%; height: 100%; padding: 12px; object-fit: contain }
 .inventory-item h3 { font-size: 15px; margin: 8px 0 2px }
@@ -114,10 +111,7 @@ h2 { font-size: 21px }
 .roulette-card small { font-size: 11px; text-align: center }
 @media(max-width:600px) {
   .inventory-grid { grid-template-columns: repeat(2,minmax(0,1fr)); gap: 8px }
-  .case-body { padding: 10px }
-  .case-card-actions .primary { font-size: 12px; padding: 6px }
 }
-/* Ticket catalogue: the typography and tear line identify an edition without cover art. */
 .topbar { padding-block: 10px }
 h1, h2 { font-family: var(--font-display); font-weight: 500 }
 h1 { font-size: clamp(28px,5vw,40px); letter-spacing: -.04em }
@@ -126,28 +120,23 @@ h1 { font-size: clamp(28px,5vw,40px); letter-spacing: -.04em }
 .nav { margin-bottom: 22px; border: 0; background: var(--surface); padding: 4px; border-radius: 10px; gap: 2px }
 .nav button { border: 0; border-radius: 7px; transition: background-color .18s,color .18s }
 .nav button.active { background: var(--accent); color: white }
-.editions { margin: 16px 0 30px; --paper: #1c385f; --ink: #f1f6ff; --pencil: #c2d6ef }
-.editions > h3 { display: flex; gap: 8px; align-items: center; margin: 0 0 12px; font-size: 15px }
-.editions > h3 small { font: 12px var(--font-ui); font-variant-numeric:tabular-nums; color:var(--muted) }
-.edition-grid { display: grid; gap: 10px; grid-template-columns: repeat(auto-fill,minmax(min(188px,45%),1fr)) }
-.case-card { position: relative; display: flex; flex-direction: column; min-width: 0; padding: 14px; background: var(--paper); color: var(--ink); border: 0; border-radius: 5px 15px 5px 15px }
-.edition-number { margin-bottom:8px; font:12px var(--font-ui); font-variant-numeric:tabular-nums; color:var(--pencil); letter-spacing:.06em }
-.case-info { color:white; font-size:18px }
-.case-card h3 { font: 500 clamp(20px,3.5vw,25px)/1.15 var(--font-display); overflow-wrap:anywhere }
-.case-meta { color:var(--pencil); padding:5px 0 0; margin-bottom:auto }
-.case-card button:focus-visible { outline-color:var(--ink) }
+/* A quiet catalogue: shared matte surfaces, subtle dividers and no animated tiles. */
+.editions { margin: 20px 0 32px; --case-surface: #1a2a40; --case-edge: #304054; --case-muted: #afc1d6 }
+.editions > h3 { display:flex; align-items:center; gap:8px; margin:0 0 10px; font:600 14px/1.5 var(--font-ui); color:#ced9e7 }
+.editions > h3 small { font-size:12px; font-weight:400; color:var(--case-muted) }
+.edition-grid { display:grid; grid-template-columns:repeat(auto-fit,minmax(min(100%,340px),1fr)); gap:1px; border:1px solid var(--case-edge); border-radius:14px; overflow:hidden; background:var(--case-edge) }
+.case-card { display:grid; grid-template-columns:auto minmax(0,1fr) auto; align-items:center; column-gap:clamp(9px,2vw,18px); min-width:0; padding:12px clamp(12px,2vw,20px) 8px; background:var(--case-surface) }
+/* Fill an unpaired cell with the same surface rather than the divider colour. */
+.edition-grid::after { content:''; background:var(--case-surface) }
+.edition-number { align-self:start; margin-top:.5em; font:500 11px/1.4 var(--font-ui); font-variant-numeric:tabular-nums; color:var(--case-muted) }
+.case-description h4 { margin:0; font:500 clamp(19px,3vw,22px)/1.25 var(--font-display); color:#e2e9f2; overflow-wrap:anywhere }
+.case-details { display:inline-flex; align-items:center; gap:6px; min-height:44px; margin:-2px 0 -4px; padding:0 3px; border:0; background:transparent; color:var(--case-muted); font-size:13px }
+.case-open { display:grid; align-content:center; gap:2px; min-height:48px; min-width:94px; padding:6px 10px; border:1px solid #425772; border-radius:10px; background:#293f5d; color:#e2eaf4; text-align:center; line-height:1.25 }
+.case-open span { font-size:11px; color:#c1d0e1 }.case-open strong { font-size:14px; font-weight:600; font-variant-numeric:tabular-nums; white-space:nowrap }
+@media(hover:hover){.case-open:not(:disabled):hover { background:#324a69 }.case-details:hover { text-decoration:underline }}
 @media(prefers-reduced-motion:no-preference) {
   .page:not([hidden]),.sheet[open],.modal.show .modal-box { animation:arrive .24s ease-out both }
-  .case-card { animation:arrive .32s ease-out both }.case-card:nth-child(3n+2){animation-delay:30ms}.case-card:nth-child(3n){animation-delay:60ms}
   button:not(:disabled):active { transform:translateY(1px) }
   @keyframes arrive { from{opacity:0;transform:translateY(7px)} to{opacity:1;transform:none} }
 }
 @media(prefers-reduced-motion:reduce) { *,*::before,*::after { transition:none!important; animation:none!important } }
-/* Give the purchase action priority; the quieter outlined control opens the contents. */
-.case-card-actions { align-items:center;gap:7px }
-.case-card-actions .primary { min-width:0;min-height:48px;padding:5px 8px;border-radius:14px;display:grid;justify-items:center;align-content:center;background:linear-gradient(135deg,#2b579c,var(--accent) 65%,#122f63);box-shadow:inset 0 1px 0 #ffffff38,0 2px 5px #0c234429;line-height:1.2 }
-.case-card-actions .primary span { color:#dfebff;font-size:11px;font-weight:500 }
-.case-card-actions .primary strong { font-size:14px;font-variant-numeric:tabular-nums;white-space:nowrap }
-.case-card-actions .primary b { color:#ffdf98;font-size:12px }
-.case-card-actions .case-info { width:44px;min-height:44px;border-radius:50%;background:transparent;color:var(--pencil);border:1px solid currentColor }
-@media(hover:hover){.case-card-actions button:not(:disabled):hover { filter:brightness(1.12) }}

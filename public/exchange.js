@@ -1,4 +1,4 @@
-function mountExchange({state, api, $, esc, giftForId, renderAll}) {
+function mountExchange({state, api, $, esc, giftForId, renderAll, upgradePercent}) {
   const number = new Intl.NumberFormat('ru-RU',{maximumFractionDigits:4});
   const market = () => state.catalogue?.market;
   const quote = id => market()?.prices[id];
@@ -15,8 +15,8 @@ function mountExchange({state, api, $, esc, giftForId, renderAll}) {
     const attrs = options.key ? ` type="button" data-key="${esc(options.key)}"` : '';
     return `<${tag} class="market-card"${attrs}>${!options.key ? price(g.id) : ''}<img class="art" ${options.key ? '' : 'loading="lazy"'} src="${esc(options.art || artwork(g))}" alt=""><strong>${esc(g.name)}</strong><small>${esc(options.model || g.models[0].name)}</small>${options.key ? price(g.id) : ''}${options.odds == null ? '' : `<small class="chance">Шанс ${percent(options.odds)}</small>`}</${tag}>`;
   }
-  const percent = threshold => number.format(threshold/10000)+' %';
-  const chance = (src,dest) => Math.floor(quote(src).ton / quote(dest).ton * 1000000);
+  const percent = n => Math.round(n) + ' %';
+  const chance = (src,dest) => upgradePercent(quote(src)?.ton, quote(dest)?.ton);
   const diagram = $('chanceWheel'), pointer = $('wheelPointer');
   let ownId, targetId, mode, upgrading = false, landed = false, prize, animation, selling = false;
   let lastRefresh = Date.now(), refreshing;
@@ -37,14 +37,23 @@ function mountExchange({state, api, $, esc, giftForId, renderAll}) {
     slot($('pickOwn'), src?.giftName, src?.modelImageUrl || (src && artwork(giftForId(src.giftId))));
     slot($('pickTarget'), targetId && dest?.name, targetId && artwork(dest));
     const n = both ? chance(src.giftId,targetId) : 0;
-    diagram.style.setProperty('--arc',`${n*360/1000000}deg`);
+    diagram.style.setProperty('--arc',`${n*3.6}deg`);
     $('chanceLabel').textContent = both ? percent(n) : '—';
   }
+  function renderGallery() {
+    if (!state.catalogue) return;
+    const normalize = text => text.toLowerCase().replace(/[^a-z0-9а-яё]/g,'');
+    const query = normalize($('giftSearch').value);
+    const visible = state.catalogue.gifts.filter(g => normalize(g.name).includes(query));
+    $('marketGrid').innerHTML = visible.sort((a,b)=>(quote(a.id)?.ton ?? Infinity)-(quote(b.id)?.ton ?? Infinity))
+      .map(g=>tile(g)).join('') || '<p class="status">Ничего не найдено.</p>';
+  }
+  $('giftSearch').addEventListener('input',renderGallery);
   function render() {
     if (!state.catalogue) return;
     $('marketDate').textContent = 'Fragment · '+market().date;
     $('marketCaption').textContent = 'Минимум по коллекции, включая аукционы. Stars — игровой эквивалент.' + (tradable() ? '' : ' Архивные цены: продажа и апгрейд недоступны.');
-    $('marketGrid').innerHTML = [...state.catalogue.gifts].sort((a,b)=>(quote(a.id)?.ton ?? Infinity)-(quote(b.id)?.ton ?? Infinity)).map(g=>tile(g)).join('');
+    renderGallery();
     drawSlots();
   }
   async function refreshIfDue(force = false) {
@@ -91,7 +100,7 @@ function mountExchange({state, api, $, esc, giftForId, renderAll}) {
       const {won,ticket,threshold} = data.receipt;
       // The marker lands in the exact millionth-sector that the server sampled.
       diagram.style.setProperty('--arc',`${threshold*360/1000000}deg`);
-      $('chanceLabel').textContent=percent(threshold);
+      $('chanceLabel').textContent=percent(threshold/10000);
       const end = `rotate(${1080+(ticket+.5)*360/1000000}deg)`;
       const spin = pointer.animate([{transform:'rotate(0deg)'},{transform:end}],{duration:matchMedia('(prefers-reduced-motion: reduce)').matches?0:1600,easing:'cubic-bezier(.17,.72,.17,1)'});
       pointer.style.transform=end; await spin.finished;

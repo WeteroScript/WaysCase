@@ -11,3 +11,5 @@
 /* Adhesive's source sticker hangs head down. Keep both views head up, without
    transforming the card, price icons, or any of the other Lunar Snake models. */
 img[src="/assets/gifts/lunar-snake.webp"],.reward-motion.upright-snake{transform:rotate(180deg)}
+
+#giftSearch{width:100%;padding:10px 12px;margin-bottom:12px;border:1px solid var(--line);border-radius:8px;background:var(--surface);color:inherit}

@@ -2,9 +2,7 @@ import { parseMarket } from '../lib/market.mjs';
 import test from 'node:test';
 import assert from 'node:assert/strict';
 import { readFileSync } from 'node:fs';
-import { randomUUID } from 'node:crypto';
 import { buildCases, draw } from '../lib/catalog.mjs';
-import { startRound, cashOut, roundView } from '../lib/rocket.mjs';
 
 test('every ticket range agrees with published price-based odds and has a bundled WebP', () => {
   const market = parseMarket(JSON.parse(readFileSync(new URL('../lib/fragment-snapshot.json',import.meta.url))));
@@ -23,22 +21,17 @@ test('every ticket range agrees with published price-based odds and has a bundle
     assert.equal(ticket,c.totalWeight);
   }
 });
-test('rocket rejects invalid stakes, charges once and never publishes its deadline', () => {
-  const u = {balances:{stars:100}}, args = {id:randomUUID(), stake:100, previous:null};
-  for (const stake of [0,-1,'100',1.5,101,100001]) assert.throws(() => startRound(u,{...args,stake},100));
-  startRound(u,args,100); startRound(u,args,100);
-  assert.equal(u.balances.stars,0);
-  assert.throws(() => startRound(u,{...args,id:randomUUID()},100));
-  assert.equal(roundView(u,100).crashAt, undefined);
-});
-test('settlement uses server time, including at the crash boundary and after reload', () => {
-  const r = {id:randomUUID(),stake:40,start:0,crashAt:9000};
-  const u = {balances:{stars:60},rocket:{...r}};
-  cashOut(u,r,4500);
-  const payout = Math.floor(40*roundView(u,4500).cents/100);
-  assert.equal(u.balances.stars,60+payout);
-  cashOut(u,r,10000); assert.equal(u.balances.stars,60+payout);
-  u.rocket = {...r}; cashOut(u,r,9000);
-  assert.equal(roundView(structuredClone(u),9001).status,'crashed');
-  assert.equal(u.balances.stars,60+payout);
+
+test('case pools cover the catalogue and show the actual break-even chance, not expected return',()=>{
+  const market = parseMarket(JSON.parse(readFileSync(new URL('../lib/fragment-snapshot.json',import.meta.url))));
+  const cases = buildCases(market);
+  const all = new Set(cases.flatMap(c=>c.gifts.map(g=>g.telegramId)));
+  assert.equal(all.size,124);
+  for(const c of cases){
+    const expected=c.gifts.reduce((s,g)=>s+market.prices[g.id].stars*g.weight/c.totalWeight,0);
+    const covered=c.gifts.filter(g=>market.prices[g.id].stars>=c.price).reduce((s,g)=>s+g.weight,0);
+    assert.equal(c.price,Math.ceil(expected/.90));
+    assert.equal(c.breakEvenPercent,100*covered/c.totalWeight);
+    assert.ok(c.breakEvenPercent>=20 && c.breakEvenPercent<=35,'bundled case: '+c.id);
+  }
 });

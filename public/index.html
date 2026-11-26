@@ -25,7 +25,6 @@
   <button data-tab="upgrade">Апгрейд</button>
   <button data-tab="inventory">Инвентарь</button>
   <button data-tab="profile">Профиль</button>
-  <button data-tab="rocket">Ракета</button>
 </nav>
 
 <section class="page" id="page-cases">
@@ -37,6 +36,7 @@
 <section class="page" id="page-gifts" hidden>
   <div class="market-head"><h2>Подарки</h2><small id="marketDate"></small></div>
   <p class="floor-note"><span id="marketCaption"></span> <a href="https://balticassets.eu/en/crypto/telegram-gifts/" target="_blank" rel="noopener noreferrer">Baltic Assets</a></p>
+  <input id="giftSearch" type="search" aria-label="Поиск подарка" placeholder="Найти подарок" autocomplete="off">
   <div id="marketGrid" class="market-grid"></div>
 </section>
 <section class="page" id="page-upgrade" hidden>
@@ -61,28 +61,6 @@
   <div id="profileRoot"></div>
 </section>
 
-<section class="page" id="page-rocket" hidden>
-  <div class="panel flight-panel">
-    <div class="flight-heading"><h2>Ракета</h2></div>
-    <svg id="rocketStage" viewBox="0 0 360 235" role="img" aria-label="Траектория полёта и текущий множитель">
-      <defs>
-        <pattern id="dust" width="63" height="53" patternUnits="userSpaceOnUse"><circle cx="13" cy="9" r="1" fill="#bfe7e2"/><circle cx="40" cy="37" r=".65" fill="#b4cae0"/></pattern>
-        <pattern id="grid" width="28" height="28" patternUnits="userSpaceOnUse"><path d="M28 0H0V28" fill="none" stroke="#88b89e" stroke-opacity=".08"/></pattern>
-        <linearGradient id="hull" x2="0.3" y2="1"><stop stop-color="white"/><stop offset=".52" stop-color="#d6ffe8"/><stop offset="1" stop-color="#54b891"/></linearGradient>
-        <linearGradient id="wake"><stop stop-color="#44ffa2" stop-opacity=".12"/><stop offset="1" stop-color="#8cffe4"/></linearGradient>
-        <radialGradient id="moon"><stop stop-color="#dcf4c7"/><stop offset="1" stop-color="#809c78"/></radialGradient>
-      </defs>
-      <rect width="360" height="235" fill="url(#grid)"/><rect class="dust" y="-53" x="-63" width="486" height="288" fill="url(#dust)"/>
-      <g opacity=".75" transform="translate(282 40) rotate(-18)"><circle r="18" fill="url(#moon)"/><ellipse rx="29" ry="6" fill="none" stroke="#c6dfae" stroke-width="2"/></g>
-      <path id="trail" fill="none" stroke="url(#wake)" stroke-width="3" stroke-linecap="round"/>
-      <g id="ship"><g class="vehicle"><path class="plume" d="M-17 -5 Q-28 -8 -42 0 Q-26 8 -17 5Z" fill="#ffbf60"/><path d="M-13 -7 L-20 -18 Q-5 -18 6 -7 M-13 7 L-20 18 Q-5 18 6 7" fill="#26ca92"/><path d="M-19 -6 Q0 -20 24 0 Q2 17 -19 6Z" fill="url(#hull)"/><circle cx="5" cy="-1" r="5.5" fill="#0e5062" stroke="#74ddb9" stroke-width="2"/><path d="M2 -4q2 -2 4 -1" fill="none" stroke="white"/></g><circle class="burst" r="18" fill="#ffe199"/></g>
-      <g id="flightTag"><rect x="-26" y="-9" width="53" height="20" rx="8" fill="#08271c" stroke="#407b63"/><text id="rocketMultiplier" y="5" text-anchor="middle" fill="#bcffe0">×1.00</text></g>
-    </svg>
-    <label class="stake-field">Ставка · внутренние Stars<input id="rocketStake" type="number" inputmode="numeric" min="1" max="100000" step="1" value="100" required></label>
-    <p class="status" id="rocketStatus" role="status"></p>
-    <button class="primary full" id="rocketStart" disabled>Сделать ставку</button>
-  </div>
-</section>
 </div>
 
 <div class="modal" id="caseModal">
@@ -118,8 +96,8 @@
 
 <script src="/vendor/lottie-light-5.13.0.min.js"></script>
 <script src="/exchange.js"></script>
-<script src="/flight.js"></script>
-<script>
+<script type="module">
+import { upgradePercent } from "/upgrade-odds.mjs";
 (function(){
   const tg = window.Telegram && window.Telegram.WebApp ? window.Telegram.WebApp : null;
   if (tg) { tg.ready(); tg.expand(); }
@@ -145,17 +123,13 @@
     return payload;
   }
   function giftForId(id) {
-    for (const c of (state.catalogue && state.catalogue.cases) || []) {
-      const found = c.gifts.find(g => g.id === id);
-      if (found) return found;
-    }
-    return null;
+    return state.catalogue?.gifts.find(g => g.id === id) || null;
   }
   function giftImage(gift, model) {
     const url = model?.imageUrl || gift.models?.[0]?.imageUrl;
     return url ? '<img src="' + esc(url) + '" alt="' + esc(gift.name) + '">' : '';
   }
-  const exchange = mountExchange({state,api,$,esc,giftForId,renderAll});
+  const exchange = mountExchange({state,api,$,esc,giftForId,renderAll,upgradePercent});
   function canOpen(c) { return state.user && c.totalWeight > 0 && !state.busy && state.user.balances.stars >= c.price; }
   function renderBalances() {
     const b = state.user && state.user.balances ? state.user.balances : null;
@@ -224,7 +198,7 @@
     state.activeCase = c;
     state.caseVersion = state.catalogue.market.version;
     $('modalTitle').textContent = c.title;
-    $('modalSubtitle').textContent = giftCount(c.gifts.length);
+    $('modalSubtitle').textContent = giftCount(c.gifts.length) + ' · шанс окупиться ' + c.breakEvenPercent.toLocaleString('ru-RU',{maximumFractionDigits:1}) + ' %';
     $('modalPreview').textContent = showContents ? 'Минимум коллекции на Fragment · ' + state.catalogue.market.date : '';
     $('modalGiftList').hidden = !showContents;
     $('modalGiftList').innerHTML = c.gifts.map(g => '<div class="gift-row"><div class="gift-thumb">' + giftImage(g) + '</div><div class="gift-text"><strong>' + esc(g.name) + '</strong><small>' + esc(g.models[0].name) + '</small>' + exchange.price(g.id) + '</div><span class="rarity">' + g.chance.toLocaleString('ru-RU',{maximumFractionDigits:4}) + ' %</span></div>').join('');
@@ -306,14 +280,10 @@
     }
   }
 
-  const showFlight = mountFlight({ api, onBalance(balances) {
-    if (state.user) { state.user.balances = balances; renderBalances(); renderProfile(); }
-  }});
   document.querySelectorAll('[data-tab]').forEach(button => {
     button.addEventListener('click',() => {
       document.querySelectorAll('[data-tab]').forEach(b => b.classList.toggle('active',b === button));
       if (['gifts','upgrade'].includes(button.dataset.tab)) exchange.refreshIfDue();
-      showFlight(button.dataset.tab === 'rocket' && !!state.user);
       document.querySelectorAll('.page').forEach(p => p.hidden = p.id !== 'page-' + button.dataset.tab);
     });
   });
@@ -374,7 +344,6 @@
       const me = await api('/api/me');
       state.user = me.user;
       $('authGate').hidden = true;
-      showFlight(!$('page-rocket').hidden);
       renderAll();
     } catch (error) {
       $('authGate').hidden = false;

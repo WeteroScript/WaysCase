@@ -28,7 +28,7 @@ test('sale credits the quoted game Stars once, even on retry, and never touches 
   assert.throws(()=>trade(u,'upgrade',request,fresh));
 });
 test('upgrade consumes the input once and lands on the correct side of the displayed sector',()=>{
-  const edge=Math.floor(1e6*(fresh.prices['toy-bear'].ton/fresh.prices['plush-pepe'].ton));
+  const edge=700000;
   for(const ticket of [edge-1,edge]) {
     const u=user(); const result=trade(u,'upgrade',request,fresh,()=>ticket);
     assert.equal(result.threshold,edge); assert.equal(result.won,ticket<edge);
@@ -50,5 +50,15 @@ test('all catalogue models have a local animated Telegram sticker',()=>{
   for(const g of gifts){
     const sticker=JSON.parse(gunzipSync(readFileSync(new URL(`../public/assets/animations/${g.id}.tgs`,import.meta.url))));
     assert.ok(sticker.layers.length && sticker.op>sticker.ip && sticker.fr>0,g.name);
+  }
+});
+
+test('displayed whole percent is the settlement boundary, including decimal TON quotes',()=>{
+  for(const [from,to,percent] of [[1,9999,70],[7,10,70],[.29,.4,72],[.28,.35,80],[.999,1,99]]){
+    const prices={'toy-bear':{ton:from},'plush-pepe':{ton:to}};
+    for(const ticket of [percent*10000-1,percent*10000]){
+      const r=trade(user(),'upgrade',request,{...fresh,prices},()=>ticket);
+      assert.equal(r.threshold,percent*10000);assert.equal(r.won,ticket<r.threshold);
+    }
   }
 });

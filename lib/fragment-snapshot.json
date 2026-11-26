@@ -1,77 +1,383 @@
 {
-  "date": "2026-11-18",
+  "date": "2026-11-25",
   "unit": "GRAM",
   "source": "fragment.com",
   "rate": {
-    "usd": 1.0091,
-    "eur": 0.9192
+    "usd": 0.9299,
+    "eur": 0.8496
   },
   "floors": {
-    "eternalrose": {
-      "floor_gram": 35.0
+    "algorithmcup": {
+      "floor_gram": 3000.0
     },
-    "plushpepe": {
-      "floor_gram": 7500.0
-    },
-    "durovscap": {
-      "floor_gram": 470.0
-    },
-    "diamondring": {
-      "floor_gram": 40.0
-    },
-    "toybear": {
-      "floor_gram": 43.0
-    },
-    "heartlocket": {
-      "floor_gram": 1700.0
-    },
-    "hangingstar": {
-      "floor_gram": 11.0
-    },
-    "bunnymuffin": {
-      "floor_gram": 10.0
-    },
-    "inputkey": {
-      "floor_gram": 8.0
-    },
-    "preciouspeach": {
-      "floor_gram": 319.0
-    },
-    "berrybox": {
-      "floor_gram": 11.0
-    },
-    "jellybunny": {
-      "floor_gram": 11.0
-    },
-    "lunarsnake": {
-      "floor_gram": 5.0
+    "artisanbrick": {
+      "floor_gram": 85.0
     },
     "astralshard": {
-      "floor_gram": 155.0
+      "floor_gram": 167.0
     },
-    "cookieheart": {
+    "bdaycandle": {
+      "floor_gram": 7.0
+    },
+    "berrybox": {
+      "floor_gram": 12.0
+    },
+    "bigyear": {
       "floor_gram": 6.0
     },
-    "stellarrocket": {
-      "floor_gram": 6.0
+    "blingbinky": {
+      "floor_gram": 35.0
     },
-    "easteregg": {
-      "floor_gram": 6.0
+    "bondedring": {
+      "floor_gram": 55.0
     },
-    "minioscar": {
-      "floor_gram": 120.0
+    "bowtie": {
+      "floor_gram": 7.0
     },
-    "lootbag": {
-      "floor_gram": 160.0
-    },
-    "crystalball": {
-      "floor_gram": 16.0
+    "bunnymuffin": {
+      "floor_gram": 11.0
     },
     "candycane": {
       "floor_gram": 6.0
     },
+    "chillflame": {
+      "floor_gram": 6.0
+    },
+    "cloverpin": {
+      "floor_gram": 7.0
+    },
+    "cookieheart": {
+      "floor_gram": 7.0
+    },
+    "crystalball": {
+      "floor_gram": 17.0
+    },
+    "cupidcharm": {
+      "floor_gram": 28.0
+    },
+    "deskcalendar": {
+      "floor_gram": 7.0
+    },
+    "diamondring": {
+      "floor_gram": 45.0
+    },
+    "durovscap": {
+      "floor_gram": 440.0
+    },
+    "durovsglasses": {
+      "floor_gram": 165.0
+    },
+    "easteregg": {
+      "floor_gram": 6.0
+    },
+    "electricskull": {
+      "floor_gram": 40.0
+    },
+    "eternalcandle": {
+      "floor_gram": 8.0
+    },
+    "eternalrose": {
+      "floor_gram": 35.0
+    },
+    "evileye": {
+      "floor_gram": 11.0
+    },
+    "faithamulet": {
+      "floor_gram": 10.0
+    },
+    "finepen": {
+      "floor_gram": 10.0
+    },
+    "flyingbroom": {
+      "floor_gram": 15.0
+    },
+    "freshsocks": {
+      "floor_gram": 6.0
+    },
+    "gemsignet": {
+      "floor_gram": 79.0
+    },
+    "genielamp": {
+      "floor_gram": 43.0
+    },
+    "gingercookie": {
+      "floor_gram": 7.0
+    },
+    "hangingstar": {
+      "floor_gram": 12.0
+    },
+    "happybrownie": {
+      "floor_gram": 6.0
+    },
+    "heartlocket": {
+      "floor_gram": 1700.0
+    },
+    "heroichelmet": {
+      "floor_gram": 219.0
+    },
+    "hexpot": {
+      "floor_gram": 7.0
+    },
+    "holidaydrink": {
+      "floor_gram": 7.0
+    },
+    "homemadecake": {
+      "floor_gram": 7.0
+    },
+    "hypnolollipop": {
+      "floor_gram": 6.0
+    },
+    "icecream": {
+      "floor_gram": 6.0
+    },
+    "inputkey": {
+      "floor_gram": 8.0
+    },
+    "instantramen": {
+      "floor_gram": 6.0
+    },
+    "intelligencecup": {
+      "floor_gram": 1550.0
+    },
+    "iongem": {
+      "floor_gram": 99.0
+    },
+    "ionicdryer": {
+      "floor_gram": 20.0
+    },
+    "jackinthebox": {
+      "floor_gram": 7.0
+    },
+    "jellybunny": {
+      "floor_gram": 12.0
+    },
+    "jesterhat": {
+      "floor_gram": 6.0
+    },
+    "jinglebells": {
+      "floor_gram": 13.0
+    },
+    "jollychimp": {
+      "floor_gram": 11.0
+    },
+    "joyfulbundle": {
+      "floor_gram": 11.0
+    },
+    "khabibspapakha": {
+      "floor_gram": 35.0
+    },
+    "kissedfrog": {
+      "floor_gram": 66.0
+    },
+    "libertyfigure": {
+      "floor_gram": 8.0
+    },
+    "lightsword": {
+      "floor_gram": 8.0
+    },
+    "lolpop": {
+      "floor_gram": 6.0
+    },
+    "lootbag": {
+      "floor_gram": 160.0
+    },
+    "lovecandle": {
+      "floor_gram": 14.0
+    },
+    "lovepotion": {
+      "floor_gram": 20.0
+    },
+    "lowrider": {
+      "floor_gram": 97.0
+    },
+    "luckylocket": {
+      "floor_gram": 18.0
+    },
+    "lunarsnake": {
+      "floor_gram": 6.0
+    },
+    "lushbouquet": {
+      "floor_gram": 8.0
+    },
+    "madpumpkin": {
+      "floor_gram": 16.0
+    },
+    "magicpotion": {
+      "floor_gram": 75.0
+    },
+    "mightyarm": {
+      "floor_gram": 150.0
+    },
+    "minioscar": {
+      "floor_gram": 120.0
+    },
+    "miragelamp": {
+      "floor_gram": 6.0
+    },
+    "moneypot": {
+      "floor_gram": 6.0
+    },
+    "moodpack": {
+      "floor_gram": 6.0
+    },
     "moonpendant": {
       "floor_gram": 8.0
+    },
+    "moussecake": {
+      "floor_gram": 7.0
+    },
+    "mythmask": {
+      "floor_gram": 12.0
+    },
+    "nailbracelet": {
+      "floor_gram": 150.0
+    },
+    "nekohelmet": {
+      "floor_gram": 49.0
+    },
+    "partysparkler": {
+      "floor_gram": 7.0
+    },
+    "perfumebottle": {
+      "floor_gram": 109.0
+    },
+    "petsnake": {
+      "floor_gram": 6.0
+    },
+    "plushpepe": {
+      "floor_gram": 7500.0
+    },
+    "poolfloat": {
+      "floor_gram": 6.0
+    },
+    "preciouspeach": {
+      "floor_gram": 328.0
+    },
+    "prettyposy": {
+      "floor_gram": 7.0
+    },
+    "rarebird": {
+      "floor_gram": 36.0
+    },
+    "recordplayer": {
+      "floor_gram": 16.0
+    },
+    "resistancedog": {
+      "floor_gram": 590.0
+    },
+    "restlessjar": {
+      "floor_gram": 7.0
+    },
+    "sakuraflower": {
+      "floor_gram": 14.0
+    },
+    "santahat": {
+      "floor_gram": 10.0
+    },
+    "scaredcat": {
+      "floor_gram": 319.0
+    },
+    "sharptongue": {
+      "floor_gram": 58.0
+    },
+    "signetring": {
+      "floor_gram": 45.0
+    },
+    "skullflower": {
+      "floor_gram": 15.0
+    },
+    "skystilettos": {
+      "floor_gram": 27.0
+    },
+    "sleighbell": {
+      "floor_gram": 12.0
+    },
+    "snakebox": {
+      "floor_gram": 6.0
+    },
+    "snoopcigar": {
+      "floor_gram": 20.0
+    },
+    "snoopdogg": {
+      "floor_gram": 8.0
+    },
+    "snowglobe": {
+      "floor_gram": 9.0
+    },
+    "snowmittens": {
+      "floor_gram": 10.0
+    },
+    "spicedwine": {
+      "floor_gram": 7.0
+    },
+    "springbasket": {
+      "floor_gram": 7.0
+    },
+    "spyagaric": {
+      "floor_gram": 9.0
+    },
+    "starnotepad": {
+      "floor_gram": 6.0
+    },
+    "stellarrocket": {
+      "floor_gram": 7.0
+    },
+    "surgeboard": {
+      "floor_gram": 9.0
+    },
+    "swagbag": {
+      "floor_gram": 8.0
+    },
+    "swisswatch": {
+      "floor_gram": 73.0
+    },
+    "tamagadget": {
+      "floor_gram": 7.0
+    },
+    "timelessbook": {
+      "floor_gram": 7.0
+    },
+    "tophat": {
+      "floor_gram": 13.0
+    },
+    "toybear": {
+      "floor_gram": 43.0
+    },
+    "trappedheart": {
+      "floor_gram": 22.0
+    },
+    "ufcstrike": {
+      "floor_gram": 22.0
+    },
+    "valentinebox": {
+      "floor_gram": 16.0
+    },
+    "vicecream": {
+      "floor_gram": 6.0
+    },
+    "victorymedal": {
+      "floor_gram": 6.0
+    },
+    "vintagecigar": {
+      "floor_gram": 53.0
+    },
+    "voodoodoll": {
+      "floor_gram": 49.0
+    },
+    "westsidesign": {
+      "floor_gram": 149.0
+    },
+    "whipcupcake": {
+      "floor_gram": 6.0
+    },
+    "winterwreath": {
+      "floor_gram": 7.0
+    },
+    "witchhat": {
+      "floor_gram": 8.0
+    },
+    "xmasstocking": {
+      "floor_gram": 6.0
     }
   }
 }

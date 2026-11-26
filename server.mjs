@@ -2,7 +2,6 @@ import { presentGift } from './lib/gift-art.mjs';
 import { getMarket } from './lib/market.mjs';
 import { trade } from './lib/trades.mjs';
 import { buildCases, gifts, draw } from './lib/catalog.mjs';
-import { roundView, startRound, cashOut } from './lib/rocket.mjs';
 import http from 'node:http';
 import { readFile, stat, mkdir, writeFile, rename } from 'node:fs/promises';
 import path from 'node:path';
@@ -31,6 +30,7 @@ const WEBAPP_URL = resolveWebAppUrl();
 const MIME = {
   '.html': 'text/html; charset=utf-8',
   '.css': 'text/css; charset=utf-8',
+  '.mjs': 'text/javascript; charset=utf-8',
   '.js': 'text/javascript; charset=utf-8',
   '.svg': 'image/svg+xml',
   '.png': 'image/png',
@@ -381,21 +381,6 @@ async function handleApi(req, res, url) {
       };
     });
     return json(res, outcome.status, outcome.body);
-  }
-
-  if ((req.method === 'GET' && url.pathname === '/api/rocket') ||
-      (req.method === 'POST' && ['/api/rocket/start','/api/rocket/cashout'].includes(url.pathname))) {
-    const identity = authFromRequest(req);
-    const view = (user, now) => ({ ok: true, round: roundView(user, now), now, balances: user.balances });
-    if (req.method === 'GET') return json(res, 200, view(database.users[identity.id] || {}, Date.now()));
-    const body = await readJsonBody(req);
-    const result = await mutateDatabase(db => {
-      const user = ensureUser(db, identity);
-      const now = Date.now();
-      (url.pathname.endsWith('/start') ? startRound : cashOut)(user, body, now);
-      return view(user, now);
-    });
-    return json(res, 200, result);
   }
 
   if (req.method === 'POST' && ['/api/sell','/api/upgrade'].includes(url.pathname)) {

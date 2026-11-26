@@ -39,15 +39,15 @@ test('authenticated concurrent openings debit once; insufficient balance never a
   assert.equal(a.balances.stars,10000-cost); assert.equal(b.item.id,a.item.id);
   const me = await (await fetch(origin+'/api/me',{headers:{authorization:signedHeader()}})).json();
   assert.equal(me.user.inventory.length,1); assert.equal(me.user.balances.ton,500);
-  const bet = await (await post('/api/rocket/start',{id:randomUUID(),previous:null,stake:900})).json();
-  assert.equal(bet.balances.stars,10000-cost-900); assert.equal(bet.round.stake,900);
+  assert.equal((await fetch(origin+'/api/rocket')).status,404);
+  for(const path of ['/api/rocket/start','/api/rocket/cashout']) assert.equal((await post(path,{})).status,404);
   assert.equal((await fetch(origin+a.item.modelImageUrl)).headers.get('content-type'),'image/webp');
   const sale = {itemId:a.item.id,version:catalogue.market.version};
   assert.equal((await post('/api/sell',{...sale,version:'outdated'})).status,409);
   const [sold,replay] = await Promise.all([post('/api/sell',sale),post('/api/sell',sale)].map(async p=>(await p).json()));
   assert.deepEqual(sold,replay);
   assert.equal(sold.user.inventory.length,0);
-  assert.equal(sold.user.balances.stars,10000-cost-900+catalogue.market.prices[a.item.giftId].stars);
+  assert.equal(sold.user.balances.stars,10000-cost+catalogue.market.prices[a.item.giftId].stars);
   assert.equal((await post('/api/open',args)).status,409);
   assert.equal((await post('/api/upgrade',{...sale,targetId:'plush-pepe'})).status,409);
 });

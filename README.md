@@ -24,4 +24,8 @@ Claim the one-time starter balance in Profile (10,000 Stars and 500 TON points).
 
 Use Node 20+, `node --test`, then `BOT_TOKEN=… WEBAPP_URL=https://… DATA_DIR=./data node server.mjs`. Open the Mini App via the bot; personal routes verify Telegram initData. The default port is 3000. Docker includes the bot and server in one process. Mount persistent storage at `/data`; run a single server process per database. Do not commit tokens or state files.
 
+### Bothost
+
+Use the repository root as the build context, not `bot/`. The included Dockerfile starts `node server.mjs` directly. For a generated Node.js container, use Node 20 or later, `npm ci --omit=dev` to install and `npm start` to launch. There are no npm dependencies or frontend compilation steps; keep both `package.json` and `package-lock.json` in the deployment. A successful start serves `/health` on `PORT` (default `3000`).
+
 `GET /health`, `GET /api/catalog` are public. Authenticated routes: `GET /api/me`, `POST /api/claim-starter-stars`, `POST /api/open` (`caseId`, UUID `requestId`, market `version`), `POST /api/sell` (`itemId`, `version`), `POST /api/upgrade` (`itemId`, `targetId`, `version`), `GET /api/rocket`, `POST /api/rocket/start` (`stake`, new UUID `id`, last round ID `previous` or null), `POST /api/rocket/cashout` (`id`). Replaying an opening request or the current round's start/cashout does not charge or credit twice.

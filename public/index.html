@@ -8,39 +8,45 @@
 <script src="https://telegram.org/js/telegram-web-app.js"></script>
 <link rel="stylesheet" href="/app.css">
 <link rel="stylesheet" href="/exchange.css">
+<link rel="stylesheet" href="/orbit.css">
 </head>
 <body>
 <div class="app">
 <header class="topbar">
-  <h1>WaysCase</h1>
+  <h1><span class="brand-sigil" aria-hidden="true">✦</span> WaysCase</h1>
   <div class="balances">
     <div class="balance"><span aria-label="Игровые Stars">★</span><strong id="starsBalance">—</strong></div>
     <div class="balance"><span>TON</span><strong id="tonBalance">—</strong></div>
   </div>
 </header>
 
-<nav class="nav">
-  <button class="active" data-tab="cases">Кейсы</button>
-  <button data-tab="gifts">Подарки</button>
-  <button data-tab="upgrade">Апгрейд</button>
-  <button data-tab="inventory">Инвентарь</button>
-  <button data-tab="profile">Профиль</button>
+<nav class="nav" aria-label="Разделы приложения">
+  <button class="active" aria-current="page" data-tab="cases"><span class="nav-glyph" aria-hidden="true">◫</span>Кейсы</button>
+  <button data-tab="gifts"><span class="nav-glyph" aria-hidden="true">✧</span>Подарки</button>
+  <button data-tab="upgrade"><span class="nav-glyph" aria-hidden="true">⤴</span>Апгрейд</button>
+  <button data-tab="inventory"><span class="nav-glyph" aria-hidden="true">▤</span>Инвентарь</button>
+  <button data-tab="profile"><span class="nav-glyph" aria-hidden="true">◎</span>Профиль</button>
 </nav>
 
 <section class="page" id="page-cases">
-  <h2 class="section-head">Кейсы</h2>
+  <header class="observatory">
+    <div class="orbit-art" aria-hidden="true"><i></i><b></b><em></em></div>
+    <div class="hero-copy"><span class="eyebrow">WC &nbsp;/&nbsp; ОБСЕРВАТОРИЯ</span>
+      <h2>Атлас кейсов</h2><p id="atlasSummary">Коллекции Telegram Gifts</p></div>
+  </header>
+  <div class="series-switch" role="group" aria-label="Серия кейсов"><button data-series="all" aria-pressed="true">Все кейсы</button><button data-series="standard" aria-pressed="false">Основные</button><button data-series="premium" aria-pressed="false">Премиум</button></div>
   <div id="catalogStatus" class="status">Загружаем каталог…</div>
   <div id="caseGrid" class="case-grid"></div>
 </section>
 
 <section class="page" id="page-gifts" hidden>
-  <div class="market-head"><h2>Подарки</h2><small id="marketDate"></small></div>
+  <div class="market-head"><div><span class="eyebrow">02 / КАТАЛОГ</span><h2>Подарки</h2></div><small id="marketDate"></small></div>
   <p class="floor-note"><span id="marketCaption"></span> <a href="https://balticassets.eu/en/crypto/telegram-gifts/" target="_blank" rel="noopener noreferrer">Baltic Assets</a></p>
   <input id="giftSearch" type="search" aria-label="Поиск подарка" placeholder="Найти подарок" autocomplete="off">
   <div id="marketGrid" class="market-grid"></div>
 </section>
 <section class="page" id="page-upgrade" hidden>
-  <div class="section-head"><h2>Апгрейд</h2></div>
+  <div class="section-head"><span class="eyebrow">03 / МАСТЕРСКАЯ</span><h2>Апгрейд</h2></div>
   <div class="panel upgrade-board">
     <div class="upgrade-slots">
       <div class="upgrade-slot"><label for="pickOwn">Выберите свой NFT</label><button id="pickOwn" aria-describedby="ownPrice">+</button><div class="slot-price" id="ownPrice"></div></div>
@@ -52,12 +58,13 @@
   </div>
 </section>
 <section class="page" id="page-inventory" hidden>
-  <div class="section-head"><div><h2>Мой инвентарь</h2></div></div>
+  <div class="section-head"><div><span class="eyebrow">04 / КОЛЛЕКЦИЯ</span><h2>Мой инвентарь</h2></div></div>
   <div id="inventoryRoot"></div>
 </section>
 
 <section class="page" id="page-profile" hidden>
 
+  <div class="section-head"><span class="eyebrow">05 / АККАУНТ</span><h2>Профиль</h2></div>
   <div id="profileRoot"></div>
 </section>
 
@@ -151,10 +158,19 @@ import { upgradeThreshold } from "/upgrade-odds.mjs";
   const plural = new Intl.PluralRules('ru');
   const giftCount = n => n + ' ' + ({one:'подарок',few:'подарка',many:'подарков'}[plural.select(n)] || 'подарков');
 
+  let series = 'all';
+  document.querySelector('.series-switch').onclick = event => {
+    const button = event.target.closest('[data-series]');
+    if (!button) return;
+    series = button.dataset.series;
+    document.querySelectorAll('[data-series]').forEach(b => b.setAttribute('aria-pressed',String(b === button)));
+    renderCases();
+  };
   function renderCases() {
     const root = $('caseGrid');
     if (!state.catalogue) return;
-    root.innerHTML = [false,true].map(premium => {
+    $('atlasSummary').textContent = `${state.catalogue.cases.length} кейсов · ${state.catalogue.gifts.length} коллекции подарков`;
+    root.innerHTML = [false,true].filter(p => series === 'all' || p === (series === 'premium')).map(premium => {
       const list = state.catalogue.cases.filter(c => c.premium === premium);
       return `<section class="editions${premium ? ' premium' : ''}"><h3>${premium ? 'Премиум' : 'Основная серия'} <small>${list.length}</small></h3><div class="edition-grid">` + list.map(c =>
         `<article class="case-card">
@@ -174,7 +190,7 @@ import { upgradeThreshold } from "/upgrade-odds.mjs";
     const root = $('inventoryRoot');
     const items = state.user && Array.isArray(state.user.inventory) ? state.user.inventory : [];
     if (!items.length) {
-      root.innerHTML = '<div class="empty"><strong>Пока пусто</strong></div>';
+      root.innerHTML = '<div class="empty"><span class="empty-orbit" aria-hidden="true">✧</span><strong>Здесь появятся твои подарки</strong><p>Открой кейс, чтобы начать коллекцию.</p></div>';
       return;
     }
     root.innerHTML = '<div class="inventory-grid">' + items.map(item => {
@@ -318,7 +334,11 @@ import { upgradeThreshold } from "/upgrade-odds.mjs";
 
   document.querySelectorAll('[data-tab]').forEach(button => {
     button.addEventListener('click',() => {
-      document.querySelectorAll('[data-tab]').forEach(b => b.classList.toggle('active',b === button));
+      document.querySelectorAll('[data-tab]').forEach(b => {
+        b.classList.toggle('active',b === button);
+        if (b === button) b.setAttribute('aria-current','page'); else b.removeAttribute('aria-current');
+      });
+      window.scrollTo(0,0);
       if (['gifts','upgrade'].includes(button.dataset.tab)) exchange.refreshIfDue();
       document.querySelectorAll('.page').forEach(p => p.hidden = p.id !== 'page-' + button.dataset.tab);
     });

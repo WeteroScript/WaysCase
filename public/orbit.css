@@ -1,0 +1,33 @@
+/* Observatory theme: the only illustration is a CSS-built orbital instrument. */
+:root { --page:#0c1422; --surface:#162438; --line:#324259; --ice:#aaccf0; --brass:#dec797 }
+body::before { background:radial-gradient(ellipse at top left,#22457742,transparent 60%),radial-gradient(ellipse at bottom right,#21345154,transparent 46%) }
+.topbar { border-bottom:1px solid var(--line);padding-block:10px 16px }
+.topbar h1 { display:flex;align-items:center;gap:9px;font-size:clamp(25px,4vw,34px) }
+.brand-sigil { width:32px;height:32px;display:grid;place-items:center;border:1px solid #59708e;border-radius:10px;color:var(--brass);background:#1d304a;font-size:22px }
+.balances { gap:6px }.balance { padding:6px 9px;border:1px solid #30435d;background:#142237 }
+.nav { background:transparent;gap:4px;padding:0 }
+.nav button { display:flex;align-items:center;justify-content:center;gap:8px;min-height:44px }
+.nav button.active { background:#233d61;color:#e6f1ff }.nav-glyph { font:21px/1 Georgia,serif;color:var(--ice) }
+.eyebrow { font:600 10px/1.5 var(--font-ui);letter-spacing:.16em;color:var(--ice) }
+.observatory { isolation:isolate;position:relative;overflow:hidden;display:flex;align-items:end;min-height:205px;padding:clamp(20px,4vw,42px);border:1px solid #3a526e;border-radius:22px;background:radial-gradient(ellipse at 76% 42%,#395578 0%,#1b304a 37%,#132034 79%) }
+.observatory::before { content:'';position:absolute;inset:0;z-index:-1;opacity:.4;background-image:radial-gradient(1px 1px at 18px 16px,#e3efff 90%,transparent),radial-gradient(1px 1px at 46px 38px,#a4c4e4 90%,transparent);background-size:97px 81px,143px 109px }
+.hero-copy { position:relative }.hero-copy h2 { margin:9px 0 6px;font:500 clamp(34px,6vw,66px)/1.05 var(--font-display);letter-spacing:-.045em;color:#eff4fb }.hero-copy p { margin:0;color:#c2d2e6;font-size:13px }
+.orbit-art { position:absolute;z-index:-1;inset:0 0 0 auto;width:42%;display:grid;place-items:center;pointer-events:none }
+.orbit-art i,.orbit-art b,.orbit-art em { position:absolute;border-radius:50%;width:70%;aspect-ratio:1;max-width:282px;transform:rotate(-32deg) scaleY(.41);border:2px solid #b8cfde8a }
+.orbit-art i { width:94%;max-width:340px;border:1px dashed #b8cfde88 }
+.orbit-art::before { content:'';width:39%;max-width:148px;aspect-ratio:1;border-radius:50%;background:radial-gradient(circle at 30% 22%,#e0d9be,#99b7c1 22%,#577997 48%,#1b304a 75%,#101b2e);box-shadow:-4px -4px 28px #bbdbea22 }
+.orbit-art b { border-top-color:transparent;box-shadow:0 3px 0 #c9bf9c4d }.orbit-art em { width:87%;border:1px solid #bfd4e348;transform:rotate(36deg) scaleX(.42) }
+.series-switch { display:flex;gap:5px;flex-wrap:wrap;margin-top:20px }.series-switch button { background:transparent;border:1px solid transparent;border-radius:20px;padding:8px 15px;min-height:40px;font-size:13px;color:var(--muted) }.series-switch [aria-pressed=true] { color:#e8f1ff;background:#21354e;border-color:#3b526e }
+.editions > h3 { letter-spacing:.02em }.editions > h3::after { content:'';height:1px;background:var(--line);flex:1;margin-left:6px }.editions > h3 small { color:var(--brass) }
+.edition-number { padding:4px;border:1px solid #40556f;border-radius:5px;color:#c8d9ed;font-size:10px }.case-open { background:#253d5c;border-color:#395573 }.case-open strong { color:#e4d5b6 }
+.page:not(#page-cases) .section-head h2,.market-head h2 { font-size:clamp(30px,4vw,42px);letter-spacing:-.035em }
+.market-card,.inventory-item,.panel,.modal-box,.sheet { border-color:#364b65;border-radius:18px;background:linear-gradient(155deg,#1c2e44,#142134 72%) }
+.market-card .art,.inventory-image,.reward-art { background:radial-gradient(ellipse at center,#688bb82b,transparent 68%) }
+.upgrade-slot button { border-style:solid;border-color:#415976;background:radial-gradient(ellipse at top,#263e5a,#111d2e) }.wheel { box-shadow:0 0 0 4px #23354d,0 0 28px #5288bf22 }
+.empty { text-align:center;border:1px dashed #405670;border-radius:18px;padding:32px;background:#17263b }.empty strong,.empty-orbit { display:block }.empty-orbit { font-size:36px;color:var(--brass) }.empty p { font-size:13px;color:var(--muted);margin-top:5px }
+@media(max-width:650px){
+  body { padding-bottom:calc(82px + env(safe-area-inset-bottom)) }.app { padding-top:6px }.topbar { margin-bottom:14px }.balances { gap:3px }.balance { padding:4px 6px;font-size:12px }
+  .nav { position:fixed;z-index:12;bottom:0;left:0;right:0;margin:0;padding:5px 4px calc(5px + env(safe-area-inset-bottom));display:grid;grid-template-columns:repeat(5,minmax(0,1fr));gap:2px;border-radius:16px 16px 0 0;border:1px solid #324760;background:#101d30f5 }
+  .nav button { flex-direction:column;gap:4px;padding:5px 1px;min-height:48px;font-size:clamp(9px,2.7vw,12px) }
+  .observatory { min-height:170px;padding:18px }.hero-copy { max-width:74% }.orbit-art { width:43%;right:-4%;top:-23% }.series-switch { margin-top:14px }
+}
